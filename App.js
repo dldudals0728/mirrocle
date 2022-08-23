@@ -1,178 +1,114 @@
 import { StatusBar } from "expo-status-bar";
 import {
-  Image,
+  Alert,
   StyleSheet,
   Text,
-  TextInput,
   TouchableWithoutFeedback,
   View,
-  Keyboard,
-  Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { theme } from "./colors";
+import { AntDesign } from "@expo/vector-icons";
+import { Fontisto } from "@expo/vector-icons";
 
 export default function App() {
-  const login = () => {
-    Alert.alert("Log in", "success!", [
+  const gotoUser = () => {
+    Alert.alert("access user", "success!", [
       {
         text: "OK",
       },
     ]);
   };
-  const signIn = () => {
-    Alert.alert("Sign in", "success!", [
+  const addUser = () => {
+    Alert.alert("add user", "Do you want add user?", [
       {
-        text: "OK",
+        text: "cancel",
+      },
+      {
+        text: "I'm Sure",
+        onPress: () => {
+          Alert.alert("add user", "success!", [
+            {
+              text: "OK",
+            },
+          ]);
+        },
       },
     ]);
   };
-  const loginWithGoogle = () => {
-    Alert.alert("Log in with Google", "success!", [
+  const payUser = () => {
+    Alert.alert("pay for additional user", "Do you want pay for add user?", [
       {
-        text: "OK",
+        text: "cancel",
       },
-    ]);
-  };
-  const loginWithGithub = () => {
-    Alert.alert("Log in with github", "success!", [
       {
-        text: "OK",
-      },
-    ]);
-  };
-  const loginWithKakao = () => {
-    Alert.alert("Log in with kakao", "success!", [
-      {
-        text: "OK",
-      },
-    ]);
-  };
-  const loginWithMeta = () => {
-    Alert.alert("Log in with Meta", "success!", [
-      {
-        text: "OK",
+        text: "I'm Sure",
+        onPress: () => {
+          Alert.alert("payment", "success!", [
+            {
+              text: "OK",
+            },
+          ]);
+        },
       },
     ]);
   };
   return (
-    // TouchableWithoutFeedback onPress={Keyboard.dismiss}으로 View(container)를 감쌀 시, 빈 공간을 터치하면 키보드가 내려간다!
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <View style={styles.loginInputContainer}>
-          <View style={styles.banner}>
-            <MaterialCommunityIcons
-              name="mirror-rectangle"
-              size={100}
-              color="black"
-            />
-            <View>
-              <Text>Smart Mirror</Text>
-              <Text style={styles.bannerText}>Mirrocle</Text>
-            </View>
-          </View>
-          <TextInput
-            style={styles.login}
-            placeholder="아이디"
-            returnKeyType="done"
-          ></TextInput>
-          <TextInput
-            style={styles.login}
-            placeholder="비밀번호"
-            secureTextEntry={true}
-            returnKeyType="done"
-          ></TextInput>
+    <View style={styles.container}>
+      <View style={styles.banner}>
+        <MaterialCommunityIcons
+          name="mirror-rectangle"
+          size={100}
+          color="black"
+        />
+        <View>
+          <Text>Smart Mirror</Text>
+          <Text style={styles.bannerText}>Mirrocle</Text>
         </View>
-        <View style={styles.loginBtnContainer}>
-          <TouchableWithoutFeedback onPress={login}>
-            <View style={styles.loginBtn}>
-              <Text style={styles.loginText}>로그인</Text>
-            </View>
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPress={signIn}>
-            <View style={styles.loginBtn}>
-              <Text style={styles.loginText}>회원가입</Text>
-            </View>
-          </TouchableWithoutFeedback>
-          <View style={styles.socialLogin}>
-            <View style={styles.social__col}>
-              <TouchableWithoutFeedback onPress={loginWithGoogle}>
-                <View
-                  style={{
-                    ...styles.socialBtn,
-                    backgroundColor: theme.googleBg,
-                  }}
-                >
-                  <Image
-                    style={styles.logo}
-                    source={require("./src/images/google-icon.png")}
-                  />
-                  <Text
-                    style={{ ...styles.socialText, color: theme.googleColor }}
-                  >
-                    google
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback onPress={loginWithGithub}>
-                <View
-                  style={{
-                    ...styles.socialBtn,
-                    backgroundColor: theme.githubBg,
-                  }}
-                >
-                  <Image
-                    style={styles.logo}
-                    source={require("./src/images/github-icon.png")}
-                  />
-                  <Text
-                    style={{ ...styles.socialText, color: theme.githubColor }}
-                  >
-                    github
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-            <View style={styles.social__col}>
-              <TouchableWithoutFeedback onPress={loginWithKakao}>
-                <View
-                  style={{
-                    ...styles.socialBtn,
-                    backgroundColor: theme.kakaoBg,
-                  }}
-                >
-                  <Image
-                    style={styles.logo}
-                    source={require("./src/images/kakao-icon.png")}
-                  />
-                  <Text
-                    style={{ ...styles.socialText, color: theme.kakaoColor }}
-                  >
-                    kakao
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback onPress={loginWithMeta}>
-                <View
-                  style={{ ...styles.socialBtn, backgroundColor: theme.MetaBg }}
-                >
-                  <Image
-                    style={styles.logo}
-                    source={require("./src/images/meta-icon.png")}
-                  />
-                  <Text
-                    style={{ ...styles.socialText, color: theme.MetaColor }}
-                  >
-                    Meta
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          </View>
-        </View>
-        <StatusBar style="auto" />
       </View>
-    </TouchableWithoutFeedback>
+      <View style={styles.userContainer}>
+        <View style={styles.userContainer__col}>
+          <TouchableWithoutFeedback onPress={gotoUser}>
+            <View style={{ ...styles.userBox, backgroundColor: "#CCCCCC" }}>
+              <AntDesign
+                name="user"
+                size={100}
+                color="black"
+                style={styles.userCharacter}
+              />
+              <Text style={styles.userText}>user1</Text>
+            </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={gotoUser}>
+            <View style={{ ...styles.userBox, backgroundColor: "#CCCCCC" }}>
+              <AntDesign
+                name="user"
+                color="black"
+                style={styles.userCharacter}
+              />
+              <Text style={styles.userText}>user2</Text>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+        <View style={styles.userContainer__col}>
+          <TouchableWithoutFeedback onPress={addUser}>
+            <View style={{ ...styles.userBox, backgroundColor: "#3A3D40" }}>
+              <AntDesign
+                name="pluscircle"
+                color="black"
+                style={styles.emptyUser}
+              />
+            </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={payUser}>
+            <View style={{ ...styles.userBox, backgroundColor: "#3A3D40" }}>
+              <Fontisto name="dollar" style={styles.paidUser} />
+              <Text style={styles.payText}>6.99$</Text>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </View>
+      <StatusBar style="auto" />
+    </View>
   );
 }
 
@@ -181,6 +117,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#2AC1BC",
     justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 40,
   },
 
@@ -188,7 +125,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "flex-end",
-    marginBottom: 20,
+    marginBottom: 40,
   },
 
   bannerText: {
@@ -196,70 +133,49 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  loginInputContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
+  userContainer: { paddingBottom: 20 },
 
-  login: {
-    fontSize: 16,
-    backgroundColor: "white",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-
-  loginBtnContainer: {
-    flex: 1,
-  },
-
-  loginBtn: {
-    textAlign: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderStyle: "solid",
-    borderColor: "black",
-    borderWidth: 1,
-  },
-
-  loginText: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  socialLogin: {},
-
-  social__col: {
+  userContainer__col: {
     flexDirection: "row",
-    justifyContent: "space-around",
   },
 
-  socialBtn: {
-    flexDirection: "row",
-    width: 150,
-    height: 50,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginBottom: 5,
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
+  userCharacter: {
+    fontSize: 100,
+    paddingBottom: 18,
   },
 
-  socialText: {
-    fontSize: 20,
+  userText: {
+    fontSize: 18,
     fontWeight: "600",
   },
 
-  logo: {
-    width: 30,
-    height: 30,
-    marginRight: 10,
+  emptyUser: {
+    fontSize: 100,
+    paddingVertical: 20,
+    color: "white",
+  },
+
+  paidUser: {
+    fontSize: 100,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    color: "white",
+  },
+
+  payText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "white",
+  },
+
+  userBox: {
+    borderRadius: 5,
+    borderWidth: 2,
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    marginHorizontal: 10,
+    marginVertical: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
