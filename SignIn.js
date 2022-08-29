@@ -16,7 +16,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "./colors";
 import { useState } from "react";
 
-export default function App() {
+function SignIn({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -48,7 +48,7 @@ export default function App() {
             returnKeyType="done"
           ></TextInput>
           <View style={styles.SignInBtnContainer}>
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback onPress={navigation.navigate("Login")}>
               <View style={styles.SingInBtn}>
                 <Text style={styles.SingInBtnText}>돌아가기</Text>
               </View>
@@ -111,3 +111,5 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
+
+export { SignIn };

@@ -38,12 +38,7 @@ function Login({ navigation }) {
       : null;
   };
   const signIn = () => {
-    //
-    Alert.alert("회원가입", "success!", [
-      {
-        text: "OK",
-      },
-    ]);
+    navigation.navigate("SignIn");
   };
   const loginWithGoogle = () => {
     Alert.alert("Log in with Google", "success!", [
@@ -207,6 +202,7 @@ const styles = StyleSheet.create({
   },
 
   banner: {
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "flex-end",
     marginBottom: 20,

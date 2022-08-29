@@ -6,16 +6,16 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { PERMISSIONS, request } from "react-native-permissions";
+// import { PERMISSIONS, request } from "react-native-permissions";
 import { theme } from "./colors";
 
 function ConnectMirrocle() {
-  const requectPermissions = async () => {
-    console.log(Platform.OS);
-    // error
-    // const result = await request(PERMISSIONS.IOS.CAMERA);
-    // console.log(result);
-  };
+  // const requectPermissions = async () => {
+  //   console.log(Platform.OS);
+  //   // error
+  //   const result = await request(PERMISSIONS.IOS.CAMERA);
+  //   console.log(result);
+  // };
   return (
     <View style={styles.container}>
       <View>
