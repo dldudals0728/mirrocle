@@ -12,8 +12,9 @@ import { theme } from "./colors";
 function ConnectMirrocle() {
   const requectPermissions = async () => {
     console.log(Platform.OS);
-    const result = await request(PERMISSIONS.IOS.CAMERA);
-    console.log(result);
+    // error
+    // const result = await request(PERMISSIONS.IOS.CAMERA);
+    // console.log(result);
   };
   return (
     <View style={styles.container}>
