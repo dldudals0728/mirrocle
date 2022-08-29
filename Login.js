@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
   },
 
   banner: {
-    flexDirection: "row",
     justifyContent: "center",
     alignItems: "flex-end",
     marginBottom: 20,

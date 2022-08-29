@@ -134,3 +134,5 @@ github 소유자가 상대방을 초대(권한 부여)해야 상대방이 write 
 react-native-permissions은 expo와 연결되지 않는다...
 
 ##
+
+"Gd"
