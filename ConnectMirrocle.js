@@ -1,13 +1,20 @@
 import {
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { PERMISSIONS, request } from "react-native-permissions";
 import { theme } from "./colors";
 
 function ConnectMirrocle() {
+  const requectPermissions = async () => {
+    console.log(Platform.OS);
+    const result = await request(PERMISSIONS.IOS.CAMERA);
+    console.log(result);
+  };
   return (
     <View style={styles.container}>
       <View>
@@ -25,7 +32,7 @@ function ConnectMirrocle() {
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <Text>또는</Text>
         </View>
-        <TouchableWithoutFeedback>
+        <TouchableWithoutFeedback onPress={requectPermissions}>
           <View style={styles.connection}>
             <Text style={styles.connectionText}>QR Code 촬영</Text>
           </View>
