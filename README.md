@@ -104,6 +104,16 @@ export{ Login }; (O)
 
 [출처](https://eunbin00.tistory.com/41)
 
+## TextInput 키보드 가리기
+
+일반 앱에서는 빈 공간 터치 시 키보드가 사라진다. 이를 구현하기 위해
+
+```JS
+<TouchableWithoutFeedback onPress={Keyboard.dismiss}></TouchableWithoutFeedback>
+```
+
+으로 전체 View를 감싸면 해당 기능을 활성화시킬 수 있다.
+
 ## git push error
 
 ```
@@ -116,3 +126,5 @@ $ git push -u origin main
 remote: Permission to dldudals0728/mirrocle.git denied to ahrwjdgus.
 fatal: unable to access 'https://github.com/dldudals0728/mirrocle.git/': The requested URL returned error: 403
 ```
+
+github 소유자가 상대방을 초대(권한 부여)해야 상대방이 write 권한을 얻을 수 있다!
