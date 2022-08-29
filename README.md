@@ -103,3 +103,16 @@ export{ Login }; (O)
 ```
 
 [출처](https://eunbin00.tistory.com/41)
+
+## git push error
+
+```
+$ git push -u origin main
+```
+
+에러
+
+```
+remote: Permission to dldudals0728/mirrocle.git denied to ahrwjdgus.
+fatal: unable to access 'https://github.com/dldudals0728/mirrocle.git/': The requested URL returned error: 403
+```
