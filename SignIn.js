@@ -1,22 +1,22 @@
-import { StatusBar } from "expo-status-bar";
 import {
-  Image,
   StyleSheet,
   Text,
   TextInput,
   TouchableWithoutFeedback,
   View,
   Keyboard,
-  Alert,
-  NativeModules,
-  Button,
-  TouchableOpacity,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "./colors";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function SignIn({ navigation }) {
+  const [userId, setUserId] = useState("");
+  const [userPwd, setUserPwd] = useState("");
+  const [checkPwd, setCheckPwd] = useState("");
+  const goHome = () => {
+    navigation.goBack();
+  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -33,22 +33,28 @@ function SignIn({ navigation }) {
             </View>
           </View>
           <TextInput
+            value={userId}
+            onChangeText={setUserId}
             style={styles.singin}
             placeholder="아이디 입력"
             returnKeyType="done"
           ></TextInput>
           <TextInput
+            value={setUserPwd}
+            onChangeText={userPwd}
             style={styles.singin}
             placeholder="비밀번호 입력"
             returnKeyType="done"
           ></TextInput>
           <TextInput
+            value={checkPwd}
+            onChangeText={setCheckPwd}
             style={styles.singin}
             placeholder="비밀번호 확인(재입력)"
             returnKeyType="done"
           ></TextInput>
           <View style={styles.SignInBtnContainer}>
-            <TouchableWithoutFeedback onPress={navigation.navigate("Login")}>
+            <TouchableWithoutFeedback onPress={goHome}>
               <View style={styles.SingInBtn}>
                 <Text style={styles.SingInBtnText}>돌아가기</Text>
               </View>
