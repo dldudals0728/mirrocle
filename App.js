@@ -17,7 +17,7 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="AddUser" component={AddUser} />
+        {/* <Stack.Screen name="AddUser" component={AddUser} /> */}
         <Stack.Screen name="Loading" component={Loading} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Connection" component={ConnectMirrocle} />
