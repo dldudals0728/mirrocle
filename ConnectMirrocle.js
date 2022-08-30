@@ -9,8 +9,8 @@ import {
 // import { PERMISSIONS, request } from "react-native-permissions";
 import { theme } from "./colors";
 
-function ConnectMirrocle() {
-  // const requectPermissions = async () => {
+function ConnectMirrocle({ navigation }) {
+  // const requestPermissions = async () => {
   //   console.log(Platform.OS);
   //   // error
   //   const result = await request(PERMISSIONS.IOS.CAMERA);
@@ -25,7 +25,11 @@ function ConnectMirrocle() {
         ></TextInput>
       </View>
       <View>
-        <TouchableWithoutFeedback>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            navigation.navigate("UserList");
+          }}
+        >
           <View style={styles.connection}>
             <Text style={styles.connectionText}>연결하기</Text>
           </View>
@@ -33,7 +37,11 @@ function ConnectMirrocle() {
         <View style={{ alignItems: "center", marginBottom: 20 }}>
           <Text>또는</Text>
         </View>
-        <TouchableWithoutFeedback onPress={requectPermissions}>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            navigation.navigate("Login");
+          }}
+        >
           <View style={styles.connection}>
             <Text style={styles.connectionText}>QR Code 촬영</Text>
           </View>

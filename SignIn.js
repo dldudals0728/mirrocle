@@ -14,9 +14,6 @@ function SignIn({ navigation }) {
   const [userId, setUserId] = useState("");
   const [userPwd, setUserPwd] = useState("");
   const [checkPwd, setCheckPwd] = useState("");
-  const goHome = () => {
-    navigation.goBack();
-  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -54,7 +51,11 @@ function SignIn({ navigation }) {
             returnKeyType="done"
           ></TextInput>
           <View style={styles.SignInBtnContainer}>
-            <TouchableWithoutFeedback onPress={goHome}>
+            <TouchableWithoutFeedback
+              onPress={() => {
+                navigation.navigate("Login");
+              }}
+            >
               <View style={styles.SingInBtn}>
                 <Text style={styles.SingInBtnText}>돌아가기</Text>
               </View>

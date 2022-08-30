@@ -133,4 +133,28 @@ github 소유자가 상대방을 초대(권한 부여)해야 상대방이 write 
 
 react-native-permissions은 expo와 연결되지 않는다...
 
-##
+## expo error?
+
+```
+info Launching Dev Tools...
+node:events:505
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: spawn cmd ENOENT
+    at Process.ChildProcess._handle.onexit (node:internal/child_process:283:19)
+    at onErrorNT (node:internal/child_process:478:16)
+    at processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on ChildProcess instance at:
+    at Process.ChildProcess._handle.onexit (node:internal/child_process:289:12)
+    at onErrorNT (node:internal/child_process:478:16)
+    at processTicksAndRejections (node:internal/process/task_queues:83:21) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'spawn cmd',
+  path: 'cmd',
+  spawnargs: [ '/c', 'start', '""', '/b', 'http://localhost:19000/debugger-ui' ]
+}
+```
+
+이 오류는 앱을 삭제했다가 다시 설치해서 해결했는데, 원인과 해결방법을 정확히 모르겠다..

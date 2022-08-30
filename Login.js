@@ -53,6 +53,7 @@ function Login({ navigation }) {
         text: "OK",
       },
     ]);
+    navigation.navigate("Connection");
   };
   const loginWithKakao = () => {
     Alert.alert("Log in with kakao", "success!", [

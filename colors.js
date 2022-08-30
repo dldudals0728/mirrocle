@@ -14,4 +14,6 @@ export const theme = {
 
   bg__white: "white",
   color__white: "black",
+
+  grey: "#3A3D40",
 };
