@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "./colors";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function SignIn({ navigation }) {
   const [userId, setUserId] = useState("");
@@ -37,8 +37,8 @@ function SignIn({ navigation }) {
             returnKeyType="done"
           ></TextInput>
           <TextInput
-            value={setUserPwd}
-            onChangeText={userPwd}
+            value={userPwd}
+            onChangeText={setUserPwd}
             style={styles.singin}
             placeholder="비밀번호 입력"
             returnKeyType="done"
