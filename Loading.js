@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, View } from "react-native";
 import { useEffect } from "react";
+import { Logo } from "./src/components/Logo";
 
 function Loading({ navigation }) {
   const goToLogin = () => {
@@ -13,17 +13,13 @@ function Loading({ navigation }) {
   useEffect(goToLogin, []);
   return (
     <View style={styles.container}>
-      <View style={styles.banner}>
-        <MaterialCommunityIcons
-          name="mirror-rectangle"
-          size={150}
-          color="black"
-        />
-        <View>
-          <Text style={styles.bannerText}>Smart Mirror</Text>
-          <Text style={styles.bannerTitle}>Mirrocle</Text>
-        </View>
-      </View>
+      <Logo
+        imageSize={150}
+        titleSize={50}
+        subTextSize={25}
+        subTextColor="white"
+        subTextWeight="600"
+      />
       <StatusBar style="auto" />
     </View>
   );
@@ -36,22 +32,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,
-  },
-
-  banner: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-
-  bannerText: {
-    color: "white",
-    fontSize: 25,
-    fontWeight: "600",
-  },
-
-  bannerTitle: {
-    fontSize: 50,
-    fontWeight: "700",
   },
 });
 

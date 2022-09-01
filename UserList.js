@@ -6,9 +6,9 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { Fontisto } from "@expo/vector-icons";
+import { Logo } from "./src/components/Logo";
 
 function UserList({ navigation }) {
   const gotoUser = () => {
@@ -55,17 +55,7 @@ function UserList({ navigation }) {
   };
   return (
     <View style={styles.container}>
-      <View style={styles.banner}>
-        <MaterialCommunityIcons
-          name="mirror-rectangle"
-          size={100}
-          color="black"
-        />
-        <View>
-          <Text>Smart Mirror</Text>
-          <Text style={styles.bannerText}>Mirrocle</Text>
-        </View>
-      </View>
+      <Logo titleSize={30} style={styles.logoStyle} />
       <View style={styles.userContainer}>
         <View style={styles.userContainer__col}>
           <TouchableWithoutFeedback onPress={gotoUser}>
@@ -122,16 +112,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
 
-  banner: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "flex-end",
+  logoStyle: {
     marginBottom: 40,
-  },
-
-  bannerText: {
-    fontSize: 30,
-    fontWeight: "700",
   },
 
   userContainer: { paddingBottom: 20 },

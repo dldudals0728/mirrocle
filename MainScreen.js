@@ -12,6 +12,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
+import { Logo } from "./src/components/Logo";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;
@@ -36,17 +37,7 @@ function MainScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.banner}>
-          <MaterialCommunityIcons
-            name="mirror-rectangle"
-            size={40}
-            color="black"
-          />
-          <View>
-            <Text style={styles.bannerSubText}>Smart Mirror</Text>
-            <Text style={styles.bannerText}>Mirrocle</Text>
-          </View>
-        </View>
+        <Logo imageSize={40} titleSize={15} subTextSize={8} />
         <View>
           <Text style={styles.username}>username</Text>
         </View>
@@ -130,21 +121,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-  },
-
-  banner: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "flex-end",
-  },
-
-  bannerText: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-
-  bannerSubText: {
-    fontSize: 8,
   },
 
   username: {

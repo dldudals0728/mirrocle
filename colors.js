@@ -16,4 +16,6 @@ export const theme = {
   color__white: "black",
 
   grey: "#3A3D40",
+
+  ivory: "#ECE6CC",
 };

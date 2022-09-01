@@ -8,11 +8,10 @@ import {
   View,
   Keyboard,
   Alert,
-  NativeModules,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "./colors";
 import { useState } from "react";
+import { Logo } from "./src/components/Logo";
 
 function Login({ navigation }) {
   const [userId, setUserId] = useState("");
@@ -46,6 +45,7 @@ function Login({ navigation }) {
         text: "OK",
       },
     ]);
+    navigation.navigate("AddUser");
   };
   const loginWithGithub = () => {
     Alert.alert("Log in with github", "success!", [
@@ -74,17 +74,7 @@ function Login({ navigation }) {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <View style={styles.loginInputContainer}>
-          <View style={styles.banner}>
-            <MaterialCommunityIcons
-              name="mirror-rectangle"
-              size={100}
-              color="black"
-            />
-            <View>
-              <Text>Smart Mirror</Text>
-              <Text style={styles.bannerText}>Mirrocle</Text>
-            </View>
-          </View>
+          <Logo titleSize={30} style={styles.logoStyle} />
           <TextInput
             style={styles.login}
             placeholder="아이디"
@@ -202,16 +192,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
 
-  banner: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "flex-end",
+  logoStyle: {
     marginBottom: 20,
-  },
-
-  bannerText: {
-    fontSize: 30,
-    fontWeight: "700",
   },
 
   loginInputContainer: {
