@@ -1,13 +1,17 @@
+import { useState } from "react";
 import {
+  Alert,
+  Keyboard,
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 // import { PERMISSIONS, request } from "react-native-permissions";
 import { theme } from "./colors";
+import { MyButton } from "./src/components/MyButton";
+import { MyTextInput } from "./src/components/MyTextInput";
 
 function ConnectMirrocle({ navigation }) {
   // const requestPermissions = async () => {
@@ -16,38 +20,41 @@ function ConnectMirrocle({ navigation }) {
   //   const result = await request(PERMISSIONS.IOS.CAMERA);
   //   console.log(result);
   // };
+  const [mirrorNumber, setMirrorNumber] = useState("");
+  const connect = () => {
+    Alert.alert("Connect to Mirrocle", "success!", [
+      {
+        text: "OK",
+      },
+    ]);
+  };
   return (
-    <View style={styles.container}>
-      <View>
-        <TextInput
-          style={styles.identification}
-          placeholder="Mirrocle 고유번호 입력"
-        ></TextInput>
-      </View>
-      <View>
-        <TouchableWithoutFeedback
-          onPress={() => {
-            navigation.navigate("UserList");
-          }}
-        >
-          <View style={styles.connection}>
-            <Text style={styles.connectionText}>연결하기</Text>
-          </View>
-        </TouchableWithoutFeedback>
-        <View style={{ alignItems: "center", marginBottom: 20 }}>
-          <Text>또는</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <View>
+          <MyTextInput
+            style={styles.identification}
+            placeholder="Mirrocle 고유번호 입력"
+            onSubmitEditing={connect}
+            value={mirrorNumber}
+            onChangeText={setMirrorNumber}
+          ></MyTextInput>
         </View>
-        <TouchableWithoutFeedback
-          onPress={() => {
-            navigation.navigate("Login");
-          }}
-        >
-          <View style={styles.connection}>
-            <Text style={styles.connectionText}>QR Code 촬영</Text>
+        <View>
+          <MyButton
+            text="연결하기"
+            onPress={() => navigation.navigate("UserList")}
+          />
+          <View style={{ alignItems: "center", marginBottom: 20 }}>
+            <Text>또는</Text>
           </View>
-        </TouchableWithoutFeedback>
+          <MyButton
+            text="QR Code 촬영"
+            onPress={() => navigation.navigate("Login")}
+          />
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -57,33 +64,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.baeminBg,
     justifyContent: "center",
     paddingHorizontal: 40,
-  },
-
-  identification: {
-    fontSize: 16,
-    backgroundColor: "white",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-
-  connection: {
-    textAlign: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderStyle: "solid",
-    borderColor: "black",
-    borderWidth: 1,
-  },
-
-  connectionText: {
-    fontSize: 16,
-    fontWeight: "700",
   },
 });
 

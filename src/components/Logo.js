@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 /**
@@ -27,9 +27,7 @@ function Logo({
     <View
       style={{
         ...style,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "flex-end",
+        ...styles.container,
       }}
     >
       <MaterialCommunityIcons
@@ -59,5 +57,13 @@ function Logo({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
+});
 
 export { Logo };

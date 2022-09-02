@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
 import { Logo } from "./src/components/Logo";
+import { MyButton } from "./src/components/MyButton";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;
@@ -96,11 +97,9 @@ function MainScreen({ navigation }) {
           }}
         />
       </View>
-      <TouchableWithoutFeedback onPress={addEditWidget}>
-        <View style={styles.widgetBtn}>
-          <Text style={styles.widgetText}>Edit Your Mirrocle!</Text>
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={{ width: "100%" }}>
+        <MyButton text="Edit Your Mirrocle!" onPress={addEditWidget} />
+      </View>
       <StatusBar style="auto" />
     </View>
   );
@@ -146,26 +145,6 @@ const styles = StyleSheet.create({
 
   indicatorContainer: {
     flexDirection: "row",
-  },
-
-  widgetBtn: {
-    width: "100%",
-    textAlign: "center",
-    alignItems: "center",
-    marginTop: 20,
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderStyle: "solid",
-    borderColor: "black",
-    borderWidth: 1,
-  },
-
-  widgetText: {
-    fontSize: 16,
-    fontWeight: "700",
   },
 });
 

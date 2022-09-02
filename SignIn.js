@@ -5,66 +5,80 @@ import {
   TouchableWithoutFeedback,
   View,
   Keyboard,
+  Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "./colors";
 import { useState } from "react";
+import { MyButton } from "./src/components/MyButton";
+import { Logo } from "./src/components/Logo";
+import { MyTextInput } from "./src/components/MyTextInput";
 
 function SignIn({ navigation }) {
   const [userId, setUserId] = useState("");
   const [userPwd, setUserPwd] = useState("");
   const [checkPwd, setCheckPwd] = useState("");
+  const clearAll = () => {
+    setUserId("");
+    setUserPwd("");
+    setCheckPwd("");
+  };
+  const signin = () => {
+    if (userId === "") {
+      Alert.alert("아이디 입력", "아이디를 입력해주세요.", [
+        {
+          text: "OK",
+        },
+      ]);
+    } else if (userPwd === "" || checkPwd === "") {
+      Alert.alert("비밀번호 입력", "비밀번호를 입력해주세요.", [
+        {
+          text: "OK",
+        },
+      ]);
+    } else {
+      Alert.alert("회원가입", "회원가입이 완료되었습니다.", [
+        {
+          text: "OK",
+        },
+      ]);
+      clearAll();
+    }
+  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <View style={styles.SignInContainer}>
-          <View style={styles.banner}>
-            <MaterialCommunityIcons
-              name="mirror-rectangle"
-              size={100}
-              color="black"
-            />
-            <View>
-              <Text>Smart Mirror</Text>
-              <Text style={styles.bannerText}>Mirrocle</Text>
-            </View>
-          </View>
-          <TextInput
+          <Logo style={{ marginBottom: 20 }} titleSize={30} titleWeight="700" />
+          <MyTextInput
             value={userId}
             onChangeText={setUserId}
-            style={styles.singin}
             placeholder="아이디 입력"
             returnKeyType="done"
-          ></TextInput>
-          <TextInput
+            onSubmitEditing={signin}
+          ></MyTextInput>
+          <MyTextInput
             value={userPwd}
             onChangeText={setUserPwd}
-            style={styles.singin}
+            secureTextEntry={true}
             placeholder="비밀번호 입력"
             returnKeyType="done"
-          ></TextInput>
-          <TextInput
+            onSubmitEditing={signin}
+          ></MyTextInput>
+          <MyTextInput
             value={checkPwd}
             onChangeText={setCheckPwd}
-            style={styles.singin}
+            secureTextEntry={true}
             placeholder="비밀번호 확인(재입력)"
             returnKeyType="done"
-          ></TextInput>
+            onSubmitEditing={signin}
+          ></MyTextInput>
           <View style={styles.SignInBtnContainer}>
-            <TouchableWithoutFeedback
-              onPress={() => {
-                navigation.navigate("Login");
-              }}
-            >
-              <View style={styles.SingInBtn}>
-                <Text style={styles.SingInBtnText}>돌아가기</Text>
-              </View>
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback>
-              <View style={styles.SingInBtn}>
-                <Text style={styles.SingInBtnText}>회원가입</Text>
-              </View>
-            </TouchableWithoutFeedback>
+            <MyButton text="회원가입" onPress={signin} />
+            <MyButton
+              text="돌아가기"
+              onPress={() => navigation.navigate("Login")}
+            />
           </View>
         </View>
       </View>
@@ -82,40 +96,6 @@ const styles = StyleSheet.create({
   SignInContainer: {
     flex: 1,
     justifyContent: "center",
-  },
-  singin: {
-    fontSize: 16,
-    backgroundColor: "white",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  banner: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "flex-end",
-    marginBottom: 20,
-  },
-  bannerText: {
-    fontSize: 30,
-    fontWeight: "700",
-  },
-  SingInBtn: {
-    textAlign: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginBottom: 20,
-    borderStyle: "solid",
-    borderColor: "black",
-    borderWidth: 1,
-  },
-
-  SingInBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
   },
 });
 

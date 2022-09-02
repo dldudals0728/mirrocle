@@ -17,5 +17,5 @@ export const theme = {
 
   grey: "#3A3D40",
 
-  ivory: "#ECE6CC",
+  githubWhite: "#F0F0F0",
 };

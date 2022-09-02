@@ -3,7 +3,6 @@ import {
   Image,
   StyleSheet,
   Text,
-  TextInput,
   TouchableWithoutFeedback,
   View,
   Keyboard,
@@ -12,32 +11,47 @@ import {
 import { theme } from "./colors";
 import { useState } from "react";
 import { Logo } from "./src/components/Logo";
+import { MyButton } from "./src/components/MyButton";
+import { MyTextInput } from "./src/components/MyTextInput";
 
 function Login({ navigation }) {
   const [userId, setUserId] = useState("");
   const [userPwd, setUserPwd] = useState("");
-  const onChangeUserId = (payload) => setUserId(payload);
-  const onChangeUserPwd = (payload) => setUserPwd(payload);
+  const clearAll = () => {
+    setUserId("");
+    setUserPwd("");
+  };
   const login = () => {
     // 사용자 인증 : User Authentication
-    userId === "root" && userPwd === "1234"
-      ? Alert.alert("로그인", "success!", [
+    if (userId === "" || userPwd === "") {
+      Alert.alert(
+        "아이디 비밀번호 입력",
+        "아이디 비밀번호를 모두 입력해주세요.",
+        [
           {
             text: "OK",
           },
-        ])
-      : Alert.alert("로그인 실패", "아이디 혹은 비밀번호 오류입니다.", [
-          {
-            text: "OK",
-          },
-        ]);
-
-    userId === "root" && userPwd === "1234"
-      ? navigation.navigate("UserList")
-      : null;
+        ]
+      );
+    } else if (userId === "root" && userPwd === "1234") {
+      Alert.alert("로그인", "success!", [
+        {
+          text: "OK",
+        },
+      ]);
+      navigation.navigate("UserList");
+      clearAll();
+    } else {
+      Alert.alert("로그인 실패", "아이디 혹은 비밀번호 오류입니다.", [
+        {
+          text: "OK",
+        },
+      ]);
+    }
   };
   const signIn = () => {
     navigation.navigate("SignIn");
+    clearAll();
   };
   const loginWithGoogle = () => {
     Alert.alert("Log in with Google", "success!", [
@@ -70,38 +84,29 @@ function Login({ navigation }) {
     ]);
   };
   return (
-    // TouchableWithoutFeedback onPress={Keyboard.dismiss}으로 View(container)를 감쌀 시, 빈 공간을 터치하면 키보드가 내려간다!
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <View style={styles.loginInputContainer}>
           <Logo titleSize={30} style={styles.logoStyle} />
-          <TextInput
-            style={styles.login}
+          <MyTextInput
             placeholder="아이디"
             returnKeyType="done"
-            onChangeText={onChangeUserId}
+            onChangeText={setUserId}
             value={userId}
-          ></TextInput>
-          <TextInput
-            style={styles.login}
+            onSubmitEditing={login}
+          />
+          <MyTextInput
             placeholder="비밀번호"
             secureTextEntry={true}
             returnKeyType="done"
-            onChangeText={onChangeUserPwd}
+            onChangeText={setUserPwd}
             value={userPwd}
-          ></TextInput>
+            onSubmitEditing={login}
+          ></MyTextInput>
         </View>
         <View style={styles.loginBtnContainer}>
-          <TouchableWithoutFeedback onPress={login}>
-            <View style={styles.loginBtn}>
-              <Text style={styles.loginText}>로그인</Text>
-            </View>
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPress={signIn}>
-            <View style={styles.loginBtn}>
-              <Text style={styles.loginText}>회원가입</Text>
-            </View>
-          </TouchableWithoutFeedback>
+          <MyButton text="로그인" onPress={login} />
+          <MyButton text="회원가입" onPress={signIn} />
           <View style={styles.socialLogin}>
             <View style={styles.social__col}>
               <TouchableWithoutFeedback onPress={loginWithGoogle}>
@@ -201,35 +206,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
 
-  login: {
-    fontSize: 16,
-    backgroundColor: "white",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-
   loginBtnContainer: {
     flex: 1,
-  },
-
-  loginBtn: {
-    textAlign: "center",
-    alignItems: "center",
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderStyle: "solid",
-    borderColor: "black",
-    borderWidth: 1,
-  },
-
-  loginText: {
-    fontSize: 16,
-    fontWeight: "700",
   },
 
   socialLogin: {},
