@@ -9,9 +9,9 @@ import {
   View,
 } from "react-native";
 // import { PERMISSIONS, request } from "react-native-permissions";
-import { theme } from "./colors";
-import { MyButton } from "./src/components/MyButton";
-import { MyTextInput } from "./src/components/MyTextInput";
+import { theme } from "../../colors";
+import { MyButton } from "../components/MyButton";
+import { MyTextInput } from "../components/MyTextInput";
 
 function ConnectMirrocle({ navigation }) {
   // const requestPermissions = async () => {

@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { useEffect } from "react";
-import { Logo } from "./src/components/Logo";
+import { Logo } from "../components/Logo";
 
 function Loading({ navigation }) {
   const goToLogin = () => {

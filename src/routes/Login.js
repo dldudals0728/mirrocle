@@ -8,11 +8,11 @@ import {
   Keyboard,
   Alert,
 } from "react-native";
-import { theme } from "./colors";
 import { useState } from "react";
-import { Logo } from "./src/components/Logo";
-import { MyButton } from "./src/components/MyButton";
-import { MyTextInput } from "./src/components/MyTextInput";
+import { theme } from "../../colors";
+import { Logo } from "../components/Logo";
+import { MyButton } from "../components/MyButton";
+import { MyTextInput } from "../components/MyTextInput";
 
 function Login({ navigation }) {
   const [userId, setUserId] = useState("");
@@ -34,11 +34,6 @@ function Login({ navigation }) {
         ]
       );
     } else if (userId === "root" && userPwd === "1234") {
-      Alert.alert("로그인", "success!", [
-        {
-          text: "OK",
-        },
-      ]);
       navigation.navigate("UserList");
       clearAll();
     } else {
@@ -118,7 +113,7 @@ function Login({ navigation }) {
                 >
                   <Image
                     style={styles.logo}
-                    source={require("./src/images/google-icon.png")}
+                    source={require("../images/google-icon.png")}
                   />
                   <Text
                     style={{ ...styles.socialText, color: theme.googleColor }}
@@ -136,7 +131,7 @@ function Login({ navigation }) {
                 >
                   <Image
                     style={styles.logo}
-                    source={require("./src/images/github-icon.png")}
+                    source={require("../images/github-icon.png")}
                   />
                   <Text
                     style={{ ...styles.socialText, color: theme.githubColor }}
@@ -156,7 +151,7 @@ function Login({ navigation }) {
                 >
                   <Image
                     style={styles.logo}
-                    source={require("./src/images/kakao-icon.png")}
+                    source={require("../images/kakao-icon.png")}
                   />
                   <Text
                     style={{ ...styles.socialText, color: theme.kakaoColor }}
@@ -171,7 +166,7 @@ function Login({ navigation }) {
                 >
                   <Image
                     style={styles.logo}
-                    source={require("./src/images/meta-icon.png")}
+                    source={require("../images/meta-icon.png")}
                   />
                   <Text
                     style={{ ...styles.socialText, color: theme.MetaColor }}

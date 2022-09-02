@@ -10,10 +10,9 @@ import {
   View,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
-import { Logo } from "./src/components/Logo";
-import { MyButton } from "./src/components/MyButton";
+import { Logo } from "../components/Logo";
+import { MyButton } from "../components/MyButton";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;

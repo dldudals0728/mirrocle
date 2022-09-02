@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { theme } from "../../colors";
 
 function MyButton({ text, onPress, style }) {
   return (
@@ -22,6 +23,7 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "black",
     borderWidth: 1,
+    backgroundColor: theme.baeminBg,
   },
 
   btnTextStyle: {

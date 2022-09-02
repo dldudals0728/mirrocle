@@ -8,7 +8,9 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Fontisto } from "@expo/vector-icons";
-import { Logo } from "./src/components/Logo";
+import { Logo } from "../components/Logo";
+import { MyButton } from "../components/MyButton";
+import { theme } from "../../colors";
 
 function UserList({ navigation }) {
   const gotoUser = () => {
@@ -98,6 +100,12 @@ function UserList({ navigation }) {
           </TouchableWithoutFeedback>
         </View>
       </View>
+      <View style={{ width: "100%" }}>
+        <MyButton
+          text="Mirrocle Settings"
+          onPress={() => navigation.navigate("MirrocleSettings")}
+        />
+      </View>
       <StatusBar style="auto" />
     </View>
   );
@@ -106,7 +114,7 @@ function UserList({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#2AC1BC",
+    backgroundColor: theme.baeminBg,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,

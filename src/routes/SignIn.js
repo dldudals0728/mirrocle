@@ -1,18 +1,15 @@
 import {
   StyleSheet,
-  Text,
-  TextInput,
   TouchableWithoutFeedback,
   View,
   Keyboard,
   Alert,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { theme } from "./colors";
 import { useState } from "react";
-import { MyButton } from "./src/components/MyButton";
-import { Logo } from "./src/components/Logo";
-import { MyTextInput } from "./src/components/MyTextInput";
+import { theme } from "../../colors";
+import { MyButton } from "../components/MyButton";
+import { Logo } from "../components/Logo";
+import { MyTextInput } from "../components/MyTextInput";
 
 function SignIn({ navigation }) {
   const [userId, setUserId] = useState("");

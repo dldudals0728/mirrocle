@@ -9,9 +9,9 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { theme } from "./colors";
-import { Icons } from "./icons";
-import { MyButton } from "./src/components/MyButton";
+import { theme } from "../../colors";
+import { Icons } from "../../icons";
+import { MyButton } from "../components/MyButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ICON_BOX_LENGTH = parseInt(Object.keys(Icons).length / 4 + 1);
@@ -23,7 +23,7 @@ function AddUser({ navigation }) {
     iconBox.push(i);
   }
   const [selectedIcon, setSelectedIcon] = useState(
-    require("./src/images/userIcon-1.png")
+    require("../images/userIcon-1.png")
   );
   return (
     <View style={styles.container}>

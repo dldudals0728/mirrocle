@@ -1,13 +1,14 @@
 import { Button, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Loading } from "./Loading";
-import { Login } from "./Login";
-import { SignIn } from "./SignIn";
-import { ConnectMirrocle } from "./ConnectMirrocle";
-import { UserList } from "./UserList";
-import { AddUser } from "./AddUser";
-import { MainScreen } from "./MainScreen";
+import { Loading } from "./src/routes/Loading";
+import { Login } from "./src/routes/Login";
+import { SignIn } from "./src/routes/SignIn";
+import { ConnectMirrocle } from "./src/routes/ConnectMirrocle";
+import { UserList } from "./src/routes/UserList";
+import { AddUser } from "./src/routes/AddUser";
+import { MainScreen } from "./src/routes/MainScreen";
+import { MirrocleSettings } from "./src/routes/MirrocleSettings";
 
 export { Loading, Login, SignIn, ConnectMirrocle, UserList, MainScreen };
 
@@ -22,6 +23,7 @@ const App = () => {
         <Stack.Screen name="Connection" component={ConnectMirrocle} />
         <Stack.Screen name="SignIn" component={SignIn} />
         <Stack.Screen name="UserList" component={UserList} />
+        <Stack.Screen name="MirrocleSettings" component={MirrocleSettings} />
         <Stack.Screen name="AddUser" component={AddUser} />
         <Stack.Screen name="MainScreen" component={MainScreen} />
       </Stack.Navigator>
