@@ -7,12 +7,15 @@ import {
   View,
   Keyboard,
   Alert,
+  Dimensions,
 } from "react-native";
 import { useState } from "react";
 import { theme } from "../../colors";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 import { MyTextInput } from "../components/MyTextInput";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 function Login({ navigation }) {
   const [userId, setUserId] = useState("");
@@ -84,6 +87,7 @@ function Login({ navigation }) {
       },
     ]);
   };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -220,7 +224,7 @@ const styles = StyleSheet.create({
 
   socialBtn: {
     flexDirection: "row",
-    width: 150,
+    width: SCREEN_WIDTH / 2.7,
     height: 50,
     paddingHorizontal: 10,
     paddingVertical: 10,

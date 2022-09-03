@@ -6,7 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
@@ -63,34 +62,25 @@ function MainScreen({ navigation }) {
       </View>
       <View style={styles.indicatorContainer}>
         <Octicons
-          name={page < 349 ? "dot" : "dot-fill"}
-          size={12}
-          color="black"
+          name={page <= 100 ? "dot" : "dot-fill"}
+          size={14}
           style={{
-            display: "absolute",
-            top: -50,
             marginLeft: 18,
             opacity: 0.5,
           }}
         />
         <Octicons
-          name={page >= 350 && page < 699 ? "dot" : "dot-fill"}
-          size={12}
-          color="black"
+          name={page > 100 && page < 600 ? "dot" : "dot-fill"}
+          size={14}
           style={{
-            display: "absolute",
-            top: -50,
             marginLeft: 18,
             opacity: 0.5,
           }}
         />
         <Octicons
-          name={page >= 700 ? "dot" : "dot-fill"}
-          size={12}
-          color="black"
+          name={page >= 600 ? "dot" : "dot-fill"}
+          size={14}
           style={{
-            display: "absolute",
-            top: -50,
             marginLeft: 18,
             opacity: 0.5,
           }}
@@ -135,7 +125,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContainer: {
-    height: SCREEN_HEIGHT - 250,
+    height: SCREEN_HEIGHT - 200,
     backgroundColor: "teal",
     borderRadius: 5,
   },

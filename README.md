@@ -249,3 +249,12 @@ var name = "Lee";
 /** @type {number[]} */
 var num = [1, 2, 3]
 ```
+
+### React Native Layout에서의 display 속성
+
+```
+display:absolute
+```
+
+React Native에서 지원하는 display 속성은 'flex'와 'none'밖에 없다. 기본값은 flex이다.
+display:absolute는 존재하지 않는다. -> 아마 css속성을 억지로 구현하여 에러난 것으로 예상

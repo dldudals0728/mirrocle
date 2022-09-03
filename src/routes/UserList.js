@@ -5,12 +5,15 @@ import {
   Text,
   TouchableWithoutFeedback,
   View,
+  Dimensions,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Fontisto } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 function UserList({ navigation }) {
   /**
@@ -79,6 +82,7 @@ function UserList({ navigation }) {
             <View style={{ ...styles.userBox, backgroundColor: "#CCCCCC" }}>
               <AntDesign
                 name="user"
+                size={100}
                 color="black"
                 style={styles.userCharacter}
               />
@@ -132,33 +136,34 @@ const styles = StyleSheet.create({
 
   userContainer__col: {
     flexDirection: "row",
+    justifyContent: "center",
   },
 
   userCharacter: {
-    fontSize: 100,
+    fontSize: 90,
     paddingBottom: 18,
   },
 
   userText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
   },
 
   emptyUser: {
-    fontSize: 100,
+    fontSize: 90,
     paddingVertical: 20,
     color: "white",
   },
 
   paidUser: {
-    fontSize: 100,
+    fontSize: 90,
     paddingVertical: 10,
     paddingHorizontal: 24,
     color: "white",
   },
 
   payText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
     color: "white",
   },
