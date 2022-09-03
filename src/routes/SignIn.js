@@ -21,7 +21,13 @@ function SignIn({ navigation }) {
     setCheckPwd("");
   };
   const signin = () => {
+    /**
+     * @todo 본인 인증 넣기(전화번호 or pass)
+     */
     if (userId === "") {
+      /**
+       * @todo 아이디가 DB에 있다 ? 이미 사용중인 아이디 입니다. : null
+       */
       Alert.alert("아이디 입력", "아이디를 입력해주세요.", [
         {
           text: "OK",
@@ -33,6 +39,12 @@ function SignIn({ navigation }) {
           text: "OK",
         },
       ]);
+    } else if (userPwd !== checkPwd) {
+      Alert.alert("비밀번호 불일치", "비밀번호가 일치하지 않습니다.", [
+        {
+          text: "OK",
+        },
+      ]);
     } else {
       Alert.alert("회원가입", "회원가입이 완료되었습니다.", [
         {
@@ -40,6 +52,7 @@ function SignIn({ navigation }) {
         },
       ]);
       clearAll();
+      navigation.reset({ routes: [{ name: "Login" }] });
     }
   };
   return (

@@ -7,7 +7,7 @@ function Loading({ navigation }) {
   const goToLogin = () => {
     // logo fade in out 추가
     setTimeout(() => {
-      navigation.navigate("Login");
+      navigation.reset({ routes: [{ name: "Login" }] });
     }, 3000);
   };
   useEffect(goToLogin, []);

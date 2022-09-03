@@ -13,6 +13,10 @@ import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
 
 function UserList({ navigation }) {
+  /**
+   * @todo 유저 정보를 수정할 수 있도록 버튼 또는 네비게이션 제공
+   * @todo 등록된 프리셋이 없다 ? (프리셋을 등록해 보세요 alert; AddUser) : null
+   */
   const gotoUser = () => {
     Alert.alert("access user", "success!", [
       {

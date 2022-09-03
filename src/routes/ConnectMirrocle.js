@@ -22,6 +22,9 @@ function ConnectMirrocle({ navigation }) {
   // };
   const [mirrorNumber, setMirrorNumber] = useState("");
   const connect = () => {
+    /**
+     * @todo 입력된 고유번호(혹은 QRcode)가 DB에 있다 ? (DB user 테이블에 연동기기 설정; UserList) : 입력 오류 입니다.
+     */
     Alert.alert("Connect to Mirrocle", "success!", [
       {
         text: "OK",

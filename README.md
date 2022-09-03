@@ -178,3 +178,74 @@ const func = () => ( ... )
 따라서 ScrollView에 map을 이용하여 리스트 안의 내용을 모두 보여주려면 화살표 함수 후에 중괄호가 아닌 소괄호로 감싸야 한다.
 
 > 이 차이 때문에 이틀을 고생했다.. [AddUser.js]
+
+## JSDoc
+
+JSDoc을 이용하여 JavaScript에서 함수에 대한 설명이나 파라미터 타입, 설명 등을 제공할 수 있다.
+
+1. 함수 및 파라미터 설명
+
+```JS
+/**
+ * 함수에 대한 설명
+ * @param {type} arg1 첫번째 인자에 대한 설명
+ * @param {type} arg2 두번째 인자에 대한 설명
+ */
+function func(arg1, arg2) {
+    return arg1 + arg2
+}
+```
+
+2. 함수 부가 정보
+
+```JS
+/**
+ * @version 1.2.3
+ * @see https://github.com/dldudals0728/mirrocle
+ */
+function func(arg1, arg2) {
+    return arg1 + arg2
+}
+```
+
+3. 변수 또는 오브젝트에 대한 설명(readonly는 강제성을 갖지 않음. 힌드일 뿐)
+
+```JS
+/**
+ * @readonly
+ * @const {type}
+ */
+const num = 1;
+```
+
+4. 메모
+
+```JS
+/**
+ * @todo 할 일 메모
+ */
+function func(arg1, arg2) {
+    return arg1 + arg2
+}
+```
+
+5. deprecated(함수 사용 시 가로줄이 쳐짐.)
+
+```JS
+/**
+ * @deprecated 다른 함수를 사용하세요.
+ */
+function func(arg1, arg2) {
+    return arg1 + arg2
+}
+```
+
+6. type 힌트 제공(typescript와 같지만 강제성이 없다.)
+
+```JS
+/** @type {String | number} */
+var name = "Lee";
+
+/** @type {number[]} */
+var num = [1, 2, 3]
+```

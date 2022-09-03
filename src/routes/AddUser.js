@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Dimensions,
   Image,
   Keyboard,
@@ -25,6 +26,19 @@ function AddUser({ navigation }) {
   const [selectedIcon, setSelectedIcon] = useState(
     require("../images/userIcon-1.png")
   );
+  const addUser = () => {
+    if (username === "") {
+      Alert.alert("유저 이름 입력", "사용자의 이름을 설정해주세요.", [
+        {
+          text: "OK",
+        },
+      ]);
+    }
+    /**
+     * @todo 해당 유저를 계정에 연결시킨다.
+     */
+  };
+
   return (
     <View style={styles.container}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

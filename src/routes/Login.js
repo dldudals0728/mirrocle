@@ -34,6 +34,9 @@ function Login({ navigation }) {
         ]
       );
     } else if (userId === "root" && userPwd === "1234") {
+      /**
+       * @todo 계정이 DB에 있다 ? (계정과 연결된 Mirrocle이 있다 ? UserList : ConnectMirrocle) : 아이디 혹은 비밀번호 오류
+       */
       navigation.navigate("UserList");
       clearAll();
     } else {
@@ -49,6 +52,9 @@ function Login({ navigation }) {
     clearAll();
   };
   const loginWithGoogle = () => {
+    /**
+     * @todo 소셜 계정 인증 ? SignIn : 인증이 완료되지 않았습니다.
+     */
     Alert.alert("Log in with Google", "success!", [
       {
         text: "OK",
