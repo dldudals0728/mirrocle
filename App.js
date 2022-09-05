@@ -9,6 +9,8 @@ import { UserList } from "./src/routes/UserList";
 import { AddUser } from "./src/routes/AddUser";
 import { MainScreen } from "./src/routes/MainScreen";
 import { MirrocleSettings } from "./src/routes/MirrocleSettings";
+import { Widgets } from "./src/routes/Widgets";
+import { PlaceWidgets } from "./src/routes/PlaceWidgets";
 
 export { Loading, Login, SignIn, ConnectMirrocle, UserList, MainScreen };
 
@@ -26,6 +28,8 @@ const App = () => {
         <Stack.Screen name="MirrocleSettings" component={MirrocleSettings} />
         <Stack.Screen name="AddUser" component={AddUser} />
         <Stack.Screen name="MainScreen" component={MainScreen} />
+        <Stack.Screen name="Widgets" component={Widgets} />
+        <Stack.Screen name="PlaceWidgets" component={PlaceWidgets} />
       </Stack.Navigator>
     </NavigationContainer>
   );

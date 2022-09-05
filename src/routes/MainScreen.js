@@ -6,12 +6,14 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { Octicons } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
+import { theme } from "../../colors";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;
@@ -20,18 +22,15 @@ function MainScreen({ navigation }) {
   const scrollX = useRef(new Animated.Value(0)).current;
   const [mirrorList, setMirrorList] = useState([]);
   const [page, setPage] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const test = (event) => {
     setPage(event.nativeEvent.contentOffset.x);
   };
   useEffect(() => {
     setMirrorList([0, 1, 2]);
   }, []);
-  const addEditWidget = () => {
-    Alert.alert("add/edit widget", "go to next window", [
-      {
-        text: "OK",
-      },
-    ]);
+  const openMenu = () => {
+    menuOpen ? setMenuOpen(false) : setMenuOpen(true);
   };
   return (
     <View style={styles.container}>
@@ -63,32 +62,91 @@ function MainScreen({ navigation }) {
       <View style={styles.indicatorContainer}>
         <Octicons
           name={page <= 100 ? "dot" : "dot-fill"}
-          size={14}
-          style={{
-            marginLeft: 18,
-            opacity: 0.5,
-          }}
+          style={styles.indicator}
         />
         <Octicons
           name={page > 100 && page < 600 ? "dot" : "dot-fill"}
-          size={14}
-          style={{
-            marginLeft: 18,
-            opacity: 0.5,
-          }}
+          style={styles.indicator}
         />
         <Octicons
           name={page >= 600 ? "dot" : "dot-fill"}
-          size={14}
-          style={{
-            marginLeft: 18,
-            opacity: 0.5,
-          }}
+          style={styles.indicator}
         />
       </View>
-      <View style={{ width: "100%" }}>
-        <MyButton text="Edit Your Mirrocle!" onPress={addEditWidget} />
-      </View>
+      <TouchableOpacity
+        onPress={openMenu}
+        style={{
+          backgroundColor: menuOpen ? "skyblue" : "aliceblue",
+          width: 75,
+          height: 75,
+          borderRadius: "50%",
+          position: "absolute",
+          right: 30,
+          bottom: 30,
+          borderWidth: 5,
+          borderColor: menuOpen ? "aliceblue" : "skyblue",
+        }}
+      >
+        <View
+          style={{
+            width: "100%",
+            height: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: -6,
+          }}
+        >
+          <Text
+            style={{ fontSize: 60, color: menuOpen ? "aliceblue" : "skyblue" }}
+          >
+            +
+          </Text>
+        </View>
+      </TouchableOpacity>
+      {menuOpen ? (
+        <View
+          style={{
+            position: "absolute",
+            right: 10,
+            bottom: 110,
+            height: "80%",
+            width: "50%",
+          }}
+        >
+          <View
+            style={{
+              height: "100%",
+              justifyContent: "flex-end",
+            }}
+          >
+            <View
+              style={{
+                height: "50%",
+                justifyContent: "space-around",
+                backgroundColor: "aliceblue",
+                borderRadius: 20,
+                paddingLeft: 15,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("Widgets");
+                  setMenuOpen(false);
+                }}
+              >
+                <Text style={{ fontSize: 18 }}>위젯 편집</Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 18 }}>사용자 정보 수정</Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 18 }}>템플릿 리스트</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      ) : null}
+
       <StatusBar style="auto" />
     </View>
   );
@@ -125,8 +183,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContainer: {
-    height: SCREEN_HEIGHT - 200,
-    backgroundColor: "teal",
+    height: SCREEN_HEIGHT - 100,
     borderRadius: 5,
   },
 
@@ -134,6 +191,14 @@ const styles = StyleSheet.create({
 
   indicatorContainer: {
     flexDirection: "row",
+    position: "relative",
+    top: -50,
+  },
+
+  indicator: {
+    fontSize: 14,
+    marginLeft: 18,
+    opacity: 0.5,
   },
 });
 

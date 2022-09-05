@@ -40,7 +40,7 @@ function Login({ navigation }) {
       /**
        * @todo 계정이 DB에 있다 ? (계정과 연결된 Mirrocle이 있다 ? UserList : ConnectMirrocle) : 아이디 혹은 비밀번호 오류
        */
-      navigation.navigate("UserList");
+      navigation.reset({ routes: [{ name: "UserList" }] });
       clearAll();
     } else {
       Alert.alert("로그인 실패", "아이디 혹은 비밀번호 오류입니다.", [
@@ -51,7 +51,7 @@ function Login({ navigation }) {
     }
   };
   const signIn = () => {
-    navigation.navigate("SignIn");
+    navigation.reset({ routes: [{ name: "SignIn" }] });
     clearAll();
   };
   const loginWithGoogle = () => {
@@ -63,7 +63,6 @@ function Login({ navigation }) {
         text: "OK",
       },
     ]);
-    navigation.navigate("AddUser");
   };
   const loginWithGithub = () => {
     Alert.alert("Log in with github", "success!", [

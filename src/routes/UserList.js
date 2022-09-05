@@ -36,11 +36,7 @@ function UserList({ navigation }) {
       {
         text: "I'm Sure",
         onPress: () => {
-          Alert.alert("add user", "success!", [
-            {
-              text: "OK",
-            },
-          ]);
+          navigation.reset({ routes: [{ name: "AddUser" }] });
         },
       },
     ]);
