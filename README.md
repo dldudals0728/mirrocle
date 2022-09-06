@@ -258,3 +258,31 @@ display:absolute
 
 React Native에서 지원하는 display 속성은 'flex'와 'none'밖에 없다. 기본값은 flex이다.
 display:absolute는 존재하지 않는다. -> 아마 css속성을 억지로 구현하여 에러난 것으로 예상
+
+## Modal from react-native
+
+```JS
+import { Modal } from "react-native";
+```
+
+RN에서 제공하는 Modal 컴포넌트는, 한번에 두개 이상의 모달창을 띄우는 것을 권장하지 않는다.(IOS에서는 아에 안되는데 android에서는 잘 모르겠다.)
+따라서 하나의 Screen에 두개 이상의 Modal을 사용하려면 먼저 하나를 닫아주고, 나머지를 띄운다.
+
+### Modal 외부를 터치하여 모달 창 종료하기
+
+```JS
+<Modal>
+<Pressable
+    style={{
+    flex: 1,
+    // "transparent"는 backgroundColor의 default값으로, 배경색이 없다.
+    backgroundColor: "transparent",
+    }}
+    onPress={() => setMenuVisible(!menuVisible)}
+/>
+</Modal>
+```
+
+위와 같이 Modal Component 안에 Press Component를 추가하면 모달을 제외한 곳을 터치하면 사라진다. 원리를 모르겠다...
+
+> 추가적으로, Modal 바깥의 Component를 터치할 수 있는지, Modal animation 속도 조절 가능한지(혹은 비동기) 알아봐야됨!

@@ -18,4 +18,6 @@ export const theme = {
   grey: "#3A3D40",
 
   githubWhite: "#F0F0F0",
+
+  IOS__grey: "#404040",
 };

@@ -3,37 +3,88 @@ import {
   Alert,
   Animated,
   Dimensions,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Octicons } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
+import { Widgets } from "./Widgets";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;
 
 function MainScreen({ navigation }) {
-  const scrollX = useRef(new Animated.Value(0)).current;
   const [mirrorList, setMirrorList] = useState([]);
   const [page, setPage] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const test = (event) => {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [widgetVisible, setWidgetVisible] = useState(false);
+  const paging = (event) => {
     setPage(event.nativeEvent.contentOffset.x);
   };
   useEffect(() => {
     setMirrorList([0, 1, 2]);
   }, []);
-  const openMenu = () => {
-    menuOpen ? setMenuOpen(false) : setMenuOpen(true);
-  };
   return (
     <View style={styles.container}>
+      <Modal
+        visible={widgetVisible}
+        animationType="animated"
+        onRequestClose={() => console.log("test")}
+        transparent={true}
+      >
+        <View style={styles.widgetContainer}>
+          <View style={styles.widgetController}></View>
+          {/* setVisible: 이게되네 */}
+          <Widgets navigation={navigation} setVisible={setWidgetVisible} />
+          <MyButton
+            text="close"
+            onPress={() => setWidgetVisible(!widgetVisible)}
+          />
+        </View>
+      </Modal>
+      <Modal
+        visible={menuVisible}
+        animationType="fade"
+        onRequestClose={() => console.log("menu test")}
+        transparent={true}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "transparent",
+          }}
+          onPress={() => setMenuVisible(!menuVisible)}
+        />
+        <View style={styles.menuContainer}>
+          <View style={styles.menuWrapper}>
+            <View style={styles.menuList}>
+              <TouchableOpacity
+                onPress={() => {
+                  // 모달을 두 개 이상 띄울 수 없다. 닫고 띄우기
+                  setMenuVisible(!menuVisible);
+                  setWidgetVisible(!widgetVisible);
+                }}
+              >
+                <Text style={{ fontSize: 18 }}>위젯 편집</Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 18 }}>사용자 정보 수정</Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 18 }}>템플릿 리스트</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.header}>
         <Logo imageSize={40} titleSize={15} subTextSize={8} />
         <View>
@@ -46,7 +97,7 @@ function MainScreen({ navigation }) {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollStyle}
-          onMomentumScrollEnd={test}
+          onMomentumScrollEnd={paging}
           // in README
           scrollEventThrottle={0}
         >
@@ -74,9 +125,9 @@ function MainScreen({ navigation }) {
         />
       </View>
       <TouchableOpacity
-        onPress={openMenu}
+        onPress={() => setMenuVisible(!menuVisible)}
         style={{
-          backgroundColor: menuOpen ? "skyblue" : "aliceblue",
+          backgroundColor: menuVisible ? "skyblue" : "aliceblue",
           width: 75,
           height: 75,
           borderRadius: "50%",
@@ -84,7 +135,7 @@ function MainScreen({ navigation }) {
           right: 30,
           bottom: 30,
           borderWidth: 5,
-          borderColor: menuOpen ? "aliceblue" : "skyblue",
+          borderColor: menuVisible ? "aliceblue" : "skyblue",
         }}
       >
         <View
@@ -97,56 +148,15 @@ function MainScreen({ navigation }) {
           }}
         >
           <Text
-            style={{ fontSize: 60, color: menuOpen ? "aliceblue" : "skyblue" }}
+            style={{
+              fontSize: 60,
+              color: menuVisible ? "aliceblue" : "skyblue",
+            }}
           >
             +
           </Text>
         </View>
       </TouchableOpacity>
-      {menuOpen ? (
-        <View
-          style={{
-            position: "absolute",
-            right: 10,
-            bottom: 110,
-            height: "80%",
-            width: "50%",
-          }}
-        >
-          <View
-            style={{
-              height: "100%",
-              justifyContent: "flex-end",
-            }}
-          >
-            <View
-              style={{
-                height: "50%",
-                justifyContent: "space-around",
-                backgroundColor: "aliceblue",
-                borderRadius: 20,
-                paddingLeft: 15,
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("Widgets");
-                  setMenuOpen(false);
-                }}
-              >
-                <Text style={{ fontSize: 18 }}>위젯 편집</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={{ fontSize: 18 }}>사용자 정보 수정</Text>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Text style={{ fontSize: 18 }}>템플릿 리스트</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      ) : null}
-
       <StatusBar style="auto" />
     </View>
   );
@@ -160,6 +170,44 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: CONTAINER_HORIZONTAL_PADDING,
     paddingTop: 50,
+  },
+
+  widgetContainer: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 60,
+    backgroundColor: "rgba(40, 40, 40, 0.9)",
+    borderRadius: 25,
+  },
+
+  widgetController: {
+    backgroundColor: "grey",
+    width: "20%",
+    height: 5,
+    borderRadius: 20,
+    marginVertical: 10,
+  },
+
+  menuContainer: {
+    position: "absolute",
+    right: 10,
+    bottom: 110,
+    height: "40%",
+    width: "50%",
+  },
+
+  menuWrapper: {
+    height: "100%",
+    justifyContent: "flex-end",
+  },
+
+  menuList: {
+    height: "100%",
+    justifyContent: "space-around",
+    backgroundColor: "aliceblue",
+    borderRadius: 20,
+    paddingLeft: 15,
   },
 
   header: {

@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { theme } from "../../colors";
 
-function Widgets({ navigation }) {
+function Widgets({ navigation, setVisible }) {
   const widgetList = [
     [
       ["날씨", "시간"],
@@ -26,60 +26,53 @@ function Widgets({ navigation }) {
     ],
   ];
   return (
-    <View style={styles.container}>
-      <ScrollView
-        pagingEnabled
-        style={{
-          backgroundColor: "white",
-          borderRadius: 20,
-          paddingVertical: 20,
-          paddingHorizontal: 20,
-        }}
-      >
-        {widgetList.map((widgetPage, idx) => (
-          <View key={idx} style={{ justifyContent: "space-between" }}>
-            {widgetPage.map((widgets, idx) => (
-              <View
-                key={idx}
-                style={{
-                  marginBottom: 50,
-                  flexDirection: "row",
-                  justifyContent: "space-around",
-                }}
-              >
-                {widgets.map((widget, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => navigation.navigate("PlaceWidgets")}
-                    style={{
-                      borderWidth: 2,
-                      width: "45%",
-                      height: 140,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <View>
-                      <Text>{widget}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+    <ScrollView pagingEnabled style={styles.scrollContainer}>
+      {widgetList.map((widgetPage, idx) => (
+        <View key={idx} style={{ justifyContent: "space-between" }}>
+          {widgetPage.map((widgets, idx) => (
+            <View key={idx} style={styles.rowStyle}>
+              {widgets.map((widget, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                    setVisible(false);
+                    navigation.navigate("PlaceWidgets", { widget: widget });
+                  }}
+                  style={styles.widgetStyle}
+                >
+                  <View>
+                    <Text>{widget}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.baeminBg,
+  scrollContainer: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+
+  rowStyle: {
+    marginBottom: 50,
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+
+  widgetStyle: {
+    borderWidth: 2,
+    width: "45%",
+    height: 140,
     justifyContent: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 40,
+    alignItems: "center",
   },
 });
 

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { theme } from "../../colors";
 
-function PlaceWidgets({ navigation }) {
+function PlaceWidgets({ navigation, route }) {
   const grid = [
     [".", ".", ".", ".", "."],
     [".", ".", ".", ".", "."],
@@ -20,7 +20,7 @@ function PlaceWidgets({ navigation }) {
         <View key={idx} style={{ flexDirection: "row", height: "10%" }}>
           {row.map((col, idx) => (
             <View key={idx} style={styles.gridStyle}>
-              <Text>{col}</Text>
+              <Text>{idx === 0 ? route.params.widget : col}</Text>
             </View>
           ))}
         </View>
