@@ -1,7 +1,12 @@
-import { StyleSheet, Text, View } from "react-native";
+import { PanResponder, StyleSheet, Text, View } from "react-native";
 import { theme } from "../../colors";
 
 function PlaceWidgets({ navigation, route }) {
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+  });
+  console.log(panResponder.panHandlers);
   const grid = [
     [".", ".", ".", ".", "."],
     [".", ".", ".", ".", "."],
@@ -20,11 +25,22 @@ function PlaceWidgets({ navigation, route }) {
         <View key={idx} style={{ flexDirection: "row", height: "10%" }}>
           {row.map((col, idx) => (
             <View key={idx} style={styles.gridStyle}>
-              <Text>{idx === 0 ? route.params.widget : col}</Text>
+              <Text style={{ color: "white" }}>{col}</Text>
             </View>
           ))}
         </View>
       ))}
+      <View
+        style={{
+          position: "absolute",
+          width: "20%",
+          height: "10%",
+          top: 38,
+          left: 36,
+          borderColor: "tomato",
+          borderWidth: 1,
+        }}
+      ></View>
     </View>
   );
 }
@@ -32,7 +48,7 @@ function PlaceWidgets({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "black",
     justifyContent: "center",
     marginHorizontal: 10,
     marginTop: 40,

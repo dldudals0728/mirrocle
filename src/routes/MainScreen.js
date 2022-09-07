@@ -41,13 +41,12 @@ function MainScreen({ navigation }) {
         transparent={true}
       >
         <View style={styles.widgetContainer}>
-          <View style={styles.widgetController}></View>
-          {/* setVisible: 이게되네 */}
-          <Widgets navigation={navigation} setVisible={setWidgetVisible} />
-          <MyButton
-            text="close"
+          <TouchableOpacity
+            style={styles.widgetController}
             onPress={() => setWidgetVisible(!widgetVisible)}
           />
+          {/* setVisible: 이게되네 */}
+          <Widgets navigation={navigation} setVisible={setWidgetVisible} />
         </View>
       </Modal>
       <Modal
