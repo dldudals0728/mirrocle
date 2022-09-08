@@ -1,12 +1,29 @@
-import { PanResponder, StyleSheet, Text, View } from "react-native";
+import { useRef } from "react";
+import { Animated, PanResponder, StyleSheet, Text, View } from "react-native";
 import { theme } from "../../colors";
 
+const AnimatedBox = Animated.createAnimatedComponent(View);
+
 function PlaceWidgets({ navigation, route }) {
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-  });
-  console.log(panResponder.panHandlers);
+  const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: (event, gesture) => {
+        position.setOffset({
+          x: position.x._value,
+          y: position.y._value,
+        });
+      },
+      onPanResponderMove: Animated.event(
+        [null, { dx: position.x, dy: position.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        position.flattenOffset();
+      },
+    })
+  ).current;
   const grid = [
     [".", ".", ".", ".", "."],
     [".", ".", ".", ".", "."],
@@ -30,17 +47,19 @@ function PlaceWidgets({ navigation, route }) {
           ))}
         </View>
       ))}
-      <View
+      <AnimatedBox
         style={{
           position: "absolute",
           width: "20%",
           height: "10%",
           top: 38,
           left: 36,
-          borderColor: "tomato",
+          backgroundColor: "tomato",
           borderWidth: 1,
+          transform: [{ translateX: position.x }, { translateY: position.y }],
         }}
-      ></View>
+        {...panResponder.panHandlers}
+      ></AnimatedBox>
     </View>
   );
 }

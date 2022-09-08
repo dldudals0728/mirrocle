@@ -21,11 +21,6 @@ function UserList({ navigation }) {
    * @todo 등록된 프리셋이 없다 ? (프리셋을 등록해 보세요 alert; AddUser) : null
    */
   const gotoUser = () => {
-    Alert.alert("access user", "success!", [
-      {
-        text: "OK",
-      },
-    ]);
     navigation.navigate("MainScreen");
   };
   const addUser = () => {

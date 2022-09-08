@@ -129,7 +129,7 @@ function MainScreen({ navigation }) {
           backgroundColor: menuVisible ? "skyblue" : "aliceblue",
           width: 75,
           height: 75,
-          borderRadius: "50%",
+          borderRadius: 50,
           position: "absolute",
           right: 30,
           bottom: 30,

@@ -286,3 +286,38 @@ RN에서 제공하는 Modal 컴포넌트는, 한번에 두개 이상의 모달�
 위와 같이 Modal Component 안에 Press Component를 추가하면 모달을 제외한 곳을 터치하면 사라진다. 원리를 모르겠다...
 
 > 추가적으로, Modal 바깥의 Component를 터치할 수 있는지, Modal animation 속도 조절 가능한지(혹은 비동기) 알아봐야됨!
+
+## useRef().current
+
+PanResponder 객체에 정확히 셋팅했음에도 정보를 받아오지 못하는 상황이 있었다.
+
+```JS
+const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      ...
+    })
+  )
+```
+
+코드를 위와 같이, 모든 props를 넘겨주었는데 작동이 안됐다.<br>
+결론은, useRef()를 이용하여 객체를 사용할 때는, useRef().current;를 붙여서 사용해야 제대로 작동하는 것 같다.
+(처음에는 .current를 사용하지 않았음)
+<br>
+또, Animated를 사용할 때도 useRef를 사용하는데 이때도 .current를 해주어야 된다.
+
+> useRef에 대해 좀 더 공부해야봐야 겠다 ...!
+
+## Warning: Animated.event now requires a second argument for options
+
+Animated, PanResponder를 이용하여 드래그로 움직이는 View를 만들었는데, 정확히 동작 하지만 위와 같은 경고문이 나왔다.
+이는 stackoverflow에서 검색을 통해 얻어냈다.
+
+```JS
+onPanResponderMove: Animated.event(
+    [null, { dx: position.x, dy: position.y }],
+    { useNativeDriver: false }
+),
+```
+
+위 코드는 드래그에 따라 뷰가 움직이도록 한 것인데, 아래에 { useNativeDriver: false }를 추가해줌으로써 경고가 사라졌다.
