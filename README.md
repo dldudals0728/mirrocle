@@ -321,3 +321,29 @@ onPanResponderMove: Animated.event(
 ```
 
 위 코드는 드래그에 따라 뷰가 움직이도록 한 것인데, 아래에 { useNativeDriver: false }를 추가해줌으로써 경고가 사라졌다.
+
+## Animated.ValueXY의 값(PlaceWidgets.js)
+
+위젯의 위치를 설정하는 화면에서, if문을 통과하지 못하는 경우가 발생했다.
+
+```JS
+const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+...
+onPanResponderRelease: (event, gesture) => {
+    position.flattenOffset();
+    currentX = position.x;
+    // log를 확인했을 때는 부동소수 값으로 출력되었다.
+    console.log(currentX);
+    ...
+    // rows: 스크린의 넓이를 10등분 하여 배열에 저장
+    if (currentX > rows[idx] && currentX < rows[idx + 1]) {
+        position.setValue({ x: rows[idx], y: 0 });
+        ...
+    }
+```
+
+위 코드의 if문을 통과하지 않았다. log를 출력했을 때는 191.33334350585938로 잘 나왔다.<br>
+그래서 typeof를 통해 position.x의 타입을 확인해 보니 Object 타입으로 나오는 것을 확인했다.
+그래서 parseInt()를 이용하여 Int형으로 변환하려 했지만, 처음에는 number형으로 나오지만 그 이후로는 NaN가 확인되었다.
+<br>
+내가 찾아낸 해결책은, position.x을 사용하지 않고, position.x.\_value를 사용하니 제대로 전달되어 if문에 들어가는 것을 확인했다.

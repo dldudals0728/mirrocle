@@ -17,46 +17,122 @@ function Widgets({ navigation, setVisible }) {
   const widgetList = [
     [
       [
-        { theme: "Ionicons", icon: "ios-sunny", message: "날씨 위젯" },
-        { theme: "Feather", icon: "clock", message: "시계" },
+        {
+          theme: "Ionicons",
+          icon: "ios-sunny",
+          message: "날씨 위젯",
+          widthSize: "20%",
+          heightSize: "10%",
+        },
+        {
+          theme: "Feather",
+          icon: "clock",
+          message: "시계",
+          widthSize: "40%",
+          heightSize: "10%",
+        },
       ],
       [
-        { theme: "Ionicons", icon: "bus", message: "교통정보" },
+        {
+          theme: "Ionicons",
+          icon: "bus",
+          message: "교통정보",
+          widthSize: "60%",
+          heightSize: "10%",
+        },
         {
           theme: "Ionicons",
           icon: "navigate",
           message: "네비게이션(도착 예상시간)",
+          widthSize: "80%",
+          heightSize: "10%",
         },
       ],
       [
-        { theme: "Ionicons", icon: "newspaper", message: "뉴스" },
-        { theme: "Feather", icon: "dollar-sign", message: "주식" },
+        {
+          theme: "Ionicons",
+          icon: "newspaper",
+          message: "뉴스",
+          widthSize: "20%",
+          heightSize: "10%",
+        },
+        {
+          theme: "Feather",
+          icon: "dollar-sign",
+          message: "주식",
+          widthSize: "20%",
+          heightSize: "20%",
+        },
       ],
     ],
     [
       [
-        { theme: "Ionicons", icon: "list", message: "ToDo" },
-        { theme: "Ionicons", icon: "calendar", message: "달력" },
+        {
+          theme: "Ionicons",
+          icon: "list",
+          message: "ToDo",
+          widthSize: "20%",
+          heightSize: "30%",
+        },
+        {
+          theme: "Ionicons",
+          icon: "calendar",
+          message: "달력",
+          widthSize: "20%",
+          heightSize: "40%",
+        },
       ],
       ["", ""],
       ["", ""],
     ],
     [
       [
-        { theme: "Ionicons", icon: "logo-youtube", message: "유튜브 위젯" },
-        { theme: "Ionicons", icon: "logo-google", message: "구글 어시스턴트" },
+        {
+          theme: "Ionicons",
+          icon: "logo-youtube",
+          message: "유튜브 위젯",
+          widthSize: "40%",
+          heightSize: "20%",
+        },
+        {
+          theme: "Ionicons",
+          icon: "logo-google",
+          message: "구글 어시스턴트",
+          widthSize: "60%",
+          heightSize: "30%",
+        },
       ],
       [
-        { theme: "Feather", icon: "message-square", message: "카카오톡 알림" },
-        { theme: "Ionicons", icon: "logo-facebook", message: "페이스북 알림" },
+        {
+          theme: "Feather",
+          icon: "message-square",
+          message: "카카오톡 알림",
+          widthSize: "80%",
+          heightSize: "40%",
+        },
+        {
+          theme: "Ionicons",
+          icon: "logo-facebook",
+          message: "페이스북 알림",
+          widthSize: "20%",
+          heightSize: "10%",
+        },
       ],
       [
         {
           theme: "Ionicons",
           icon: "logo-instagram",
           message: "인스타그램 알림",
+          widthSize: "20%",
+          heightSize: "10%",
         },
-        { theme: "Feather", icon: "book-open", message: "코스모스" },
+        {
+          theme: "Feather",
+          icon: "book-open",
+          message: "코스모스",
+          widthSize: "20%",
+          heightSize: "10%",
+        },
       ],
     ],
   ];
@@ -86,7 +162,11 @@ function Widgets({ navigation, setVisible }) {
               onPress={() => {
                 setTouch(!touch);
                 setVisible(!touch);
-                navigation.navigate("PlaceWidgets");
+                navigation.navigate("PlaceWidgets", {
+                  name: selectedWidget.message,
+                  widthSize: selectedWidget.widthSize,
+                  heightSize: selectedWidget.heightSize,
+                });
               }}
             >
               {selectedWidget.theme == "Ionicons" ? (

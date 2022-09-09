@@ -28,7 +28,6 @@ const App = () => {
         <Stack.Screen name="MirrocleSettings" component={MirrocleSettings} />
         <Stack.Screen name="AddUser" component={AddUser} />
         <Stack.Screen name="MainScreen" component={MainScreen} />
-        <Stack.Screen name="Widgets" component={Widgets} />
         <Stack.Screen name="PlaceWidgets" component={PlaceWidgets} />
       </Stack.Navigator>
     </NavigationContainer>
