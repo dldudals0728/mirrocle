@@ -146,10 +146,11 @@ function Widgets({ navigation, setVisible }) {
             justifyContent: "flex-start",
           }}
         >
-          <TouchableOpacity
-            style={styles.widgetController}
-            onPress={() => setTouch(!touch)}
-          />
+          <View style={styles.widgetControllContainer}>
+            <TouchableOpacity onPress={() => setTouch(!touch)}>
+              <Text style={{ color: "white", fontSize: 18 }}>Close</Text>
+            </TouchableOpacity>
+          </View>
           <View
             style={{
               height: "80%",
@@ -243,12 +244,16 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(40, 40, 40, 0.9)",
     borderRadius: 25,
   },
-  widgetController: {
-    backgroundColor: "grey",
-    width: "20%",
-    height: 5,
-    borderRadius: 20,
-    marginVertical: 10,
+  widgetControllContainer: {
+    width: "100%",
+    height: "5%",
+    borderBottomWidth: 1,
+    backgroundColor: "#2F3234",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    borderBottomColor: "rgba(100, 100, 100)",
+    justifyContent: "center",
+    paddingLeft: "7%",
   },
 });
 

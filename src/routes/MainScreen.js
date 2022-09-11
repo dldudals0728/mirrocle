@@ -16,7 +16,11 @@ import { Octicons } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
-import { Widgets } from "./Widgets";
+// import { Widgets } from "./Widgets";
+import { widgetList } from "../../Widgets";
+
+import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;
@@ -25,7 +29,8 @@ function MainScreen({ navigation }) {
   const [mirrorList, setMirrorList] = useState([]);
   const [page, setPage] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [widgetVisible, setWidgetVisible] = useState(false);
+  const [widgetListVisible, setWidgetListVisible] = useState(false);
+  const [widgetDetailVisible, setWidgetDetailVisible] = useState(false);
   const paging = (event) => {
     setPage(event.nativeEvent.contentOffset.x);
   };
@@ -35,18 +40,67 @@ function MainScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Modal
-        visible={widgetVisible}
+        visible={widgetListVisible}
         animationType="animated"
         onRequestClose={() => console.log("test")}
         transparent={true}
       >
+        <Modal
+          visible={widgetDetailVisible}
+          animationType="animated"
+          transparent={true}
+        >
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "flex-start",
+              alignItems: "center",
+              marginTop: 120,
+              backgroundColor: "rgba(40, 40, 40, 0.9)",
+              borderRadius: 25,
+            }}
+          >
+            <TouchableOpacity
+              style={{ width: 50, height: 50, backgroundColor: "tomato" }}
+              onPress={() => setWidgetDetailVisible(!widgetDetailVisible)}
+            />
+          </View>
+        </Modal>
         <View style={styles.widgetContainer}>
-          <TouchableOpacity
-            style={styles.widgetController}
-            onPress={() => setWidgetVisible(!widgetVisible)}
-          />
+          <View style={styles.widgetControllContainer}>
+            <TouchableOpacity
+              onPress={() => setWidgetListVisible(!widgetListVisible)}
+            >
+              <Text style={{ color: "white", fontSize: 18 }}>Close</Text>
+            </TouchableOpacity>
+          </View>
           {/* setVisible: 이게되네 */}
-          <Widgets navigation={navigation} setVisible={setWidgetVisible} />
+          {/* <Widgets navigation={navigation} setVisible={setWidgetListVisible} /> */}
+          <ScrollView
+            style={styles.widgetScrollContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            {widgetList.map((widgetRow, idx) => (
+              <View
+                key={idx}
+                style={{
+                  flexDirection: "row",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                {widgetRow.map((widget, idx) => (
+                  <View key={idx}>
+                    {widget.theme == "Ionicons" ? (
+                      <Ionicons name={widget.icon} size={80} color="white" />
+                    ) : (
+                      <Feather name={widget.icon} size={80} color="white" />
+                    )}
+                  </View>
+                ))}
+              </View>
+            ))}
+          </ScrollView>
         </View>
       </Modal>
       <Modal
@@ -69,7 +123,7 @@ function MainScreen({ navigation }) {
                 onPress={() => {
                   // 모달을 두 개 이상 띄울 수 없다. 닫고 띄우기
                   setMenuVisible(!menuVisible);
-                  setWidgetVisible(!widgetVisible);
+                  setWidgetListVisible(!widgetListVisible);
                 }}
               >
                 <Text style={{ fontSize: 18 }}>위젯 편집</Text>
@@ -180,12 +234,23 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
 
-  widgetController: {
-    backgroundColor: "grey",
-    width: "20%",
-    height: 5,
-    borderRadius: 20,
-    marginVertical: 10,
+  widgetControllContainer: {
+    width: "100%",
+    height: "5%",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(100, 100, 100)",
+    backgroundColor: "#2F3234",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    justifyContent: "center",
+    paddingLeft: "7%",
+  },
+
+  widgetScrollContainer: {
+    width: "100%",
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    backgroundColor: "tomato",
   },
 
   menuContainer: {
