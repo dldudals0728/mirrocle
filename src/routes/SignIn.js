@@ -52,7 +52,7 @@ function SignIn({ navigation }) {
         },
       ]);
       clearAll();
-      navigation.reset({ routes: [{ name: "Login" }] });
+      navigation.pop();
     }
   };
   return (
@@ -87,7 +87,9 @@ function SignIn({ navigation }) {
             <MyButton text="회원가입" onPress={signin} />
             <MyButton
               text="돌아가기"
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => {
+                navigation.pop();
+              }}
             />
           </View>
         </View>

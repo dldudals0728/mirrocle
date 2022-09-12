@@ -91,7 +91,9 @@ function AddUser({ navigation }) {
       />
       <MyButton
         text="돌아가기"
-        onPress={() => navigation.navigate("UserList")}
+        onPress={() => {
+          navigation.pop();
+        }}
       />
     </View>
   );

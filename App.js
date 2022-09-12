@@ -9,8 +9,17 @@ import { AddUser } from "./src/routes/AddUser";
 import { MainScreen } from "./src/routes/MainScreen";
 import { MirrocleSettings } from "./src/routes/MirrocleSettings";
 import { PlaceWidgets } from "./src/routes/PlaceWidgets";
+import { UserEdit } from "./src/routes/UserEdit";
 
-export { Loading, Login, SignIn, ConnectMirrocle, UserList, MainScreen };
+export {
+  Loading,
+  Login,
+  SignIn,
+  ConnectMirrocle,
+  UserList,
+  MainScreen,
+  UserEdit,
+};
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +36,7 @@ const App = () => {
         <Stack.Screen name="AddUser" component={AddUser} />
         <Stack.Screen name="MainScreen" component={MainScreen} />
         <Stack.Screen name="PlaceWidgets" component={PlaceWidgets} />
+        <Stack.Screen name="UserEdit" component={UserEdit} />
       </Stack.Navigator>
     </NavigationContainer>
   );

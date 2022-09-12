@@ -51,7 +51,7 @@ function Login({ navigation }) {
     }
   };
   const signIn = () => {
-    navigation.reset({ routes: [{ name: "SignIn" }] });
+    navigation.reset({ routeName: "SignIn" });
     clearAll();
   };
   const loginWithGoogle = () => {
@@ -73,11 +73,7 @@ function Login({ navigation }) {
     navigation.navigate("Connection");
   };
   const loginWithKakao = () => {
-    Alert.alert("Log in with kakao", "success!", [
-      {
-        text: "OK",
-      },
-    ]);
+    navigation.navigate("UserEdit");
   };
   const loginWithMeta = () => {
     Alert.alert("Log in with Meta", "success!", [
