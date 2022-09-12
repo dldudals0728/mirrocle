@@ -1,4 +1,3 @@
-import { Button, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Loading } from "./src/routes/Loading";
@@ -19,13 +18,13 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* <Stack.Screen name="Loading" component={Loading} />
+        <Stack.Screen name="Loading" component={Loading} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Connection" component={ConnectMirrocle} />
         <Stack.Screen name="SignIn" component={SignIn} />
         <Stack.Screen name="UserList" component={UserList} />
         <Stack.Screen name="MirrocleSettings" component={MirrocleSettings} />
-        <Stack.Screen name="AddUser" component={AddUser} /> */}
+        <Stack.Screen name="AddUser" component={AddUser} />
         <Stack.Screen name="MainScreen" component={MainScreen} />
         <Stack.Screen name="PlaceWidgets" component={PlaceWidgets} />
       </Stack.Navigator>

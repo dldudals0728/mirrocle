@@ -1,7 +1,5 @@
 import { StatusBar } from "expo-status-bar";
 import {
-  Alert,
-  Animated,
   Dimensions,
   Modal,
   Pressable,
@@ -14,11 +12,8 @@ import {
 import { useEffect, useState } from "react";
 import { Octicons } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
-import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
-// import { Widgets } from "./Widgets";
 import { widgetList } from "../../Widgets";
-
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -31,6 +26,8 @@ function MainScreen({ navigation }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [widgetListVisible, setWidgetListVisible] = useState(false);
   const [widgetDetailVisible, setWidgetDetailVisible] = useState(false);
+  const [selectedWidget, setSelectedWidget] = useState({});
+  const [widgetListBg, setWidgetListBg] = useState(false);
   const paging = (event) => {
     setPage(event.nativeEvent.contentOffset.x);
   };
@@ -56,23 +53,82 @@ function MainScreen({ navigation }) {
               justifyContent: "flex-start",
               alignItems: "center",
               marginTop: 120,
-              backgroundColor: "rgba(40, 40, 40, 0.9)",
+              backgroundColor: theme.IOS__grey,
               borderRadius: 25,
             }}
           >
-            <TouchableOpacity
-              style={{ width: 50, height: 50, backgroundColor: "tomato" }}
-              onPress={() => setWidgetDetailVisible(!widgetDetailVisible)}
-            />
+            <View style={styles.widgetControllContainer}>
+              {/**
+               * widget detail btn
+               */}
+              <TouchableOpacity
+                onPress={() => {
+                  setWidgetDetailVisible(!widgetDetailVisible);
+                  setWidgetListBg(!widgetListBg);
+                }}
+              >
+                <Ionicons
+                  name="ios-close-circle"
+                  color="#808080"
+                  style={{
+                    fontSize: 30,
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                width: "100%",
+                height: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setWidgetListVisible(!widgetListVisible);
+                  setWidgetDetailVisible(!widgetDetailVisible);
+                  navigation.navigate("PlaceWidgets", {
+                    name: selectedWidget.message,
+                    widthSize: selectedWidget.widthSize,
+                    heightSize: selectedWidget.heightSize,
+                  });
+                }}
+              >
+                {selectedWidget.theme == "Ionicons" ? (
+                  <Ionicons
+                    name={selectedWidget.icon}
+                    size={80}
+                    color="white"
+                  />
+                ) : (
+                  <Feather name={selectedWidget.icon} size={80} color="white" />
+                )}
+                <Text style={{ color: "white" }}>{selectedWidget.message}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Modal>
         <View style={styles.widgetContainer}>
           <View style={styles.widgetControllContainer}>
-            <TouchableOpacity
-              onPress={() => setWidgetListVisible(!widgetListVisible)}
-            >
-              <Text style={{ color: "white", fontSize: 18 }}>Close</Text>
-            </TouchableOpacity>
+            {/**
+             * widget list btn
+             */}
+            {widgetListBg ? null : (
+              <TouchableOpacity
+                onPress={() => {
+                  setWidgetListVisible(!widgetListVisible);
+                }}
+              >
+                <Ionicons
+                  name="ios-close-circle"
+                  color="#808080"
+                  style={{
+                    fontSize: 30,
+                  }}
+                />
+              </TouchableOpacity>
+            )}
           </View>
           {/* setVisible: 이게되네 */}
           {/* <Widgets navigation={navigation} setVisible={setWidgetListVisible} /> */}
@@ -90,13 +146,37 @@ function MainScreen({ navigation }) {
                 }}
               >
                 {widgetRow.map((widget, idx) => (
-                  <View key={idx}>
-                    {widget.theme == "Ionicons" ? (
-                      <Ionicons name={widget.icon} size={80} color="white" />
-                    ) : (
-                      <Feather name={widget.icon} size={80} color="white" />
-                    )}
-                  </View>
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => {
+                      setWidgetDetailVisible(!widgetDetailVisible);
+                      setSelectedWidget(widget);
+                      setWidgetListBg(!widgetListBg);
+                    }}
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "40%",
+                      marginTop: 10,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: "black",
+                        borderRadius: 10,
+                        padding: 10,
+                        marginBottom: 10,
+                      }}
+                    >
+                      {widget.theme == "Ionicons" ? (
+                        <Ionicons name={widget.icon} size={80} color="white" />
+                      ) : (
+                        <Feather name={widget.icon} size={80} color="white" />
+                      )}
+                    </View>
+                    <Text style={{ color: "white" }}>{widget.message}</Text>
+                  </TouchableOpacity>
                 ))}
               </View>
             ))}
@@ -229,28 +309,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
-    marginTop: 60,
-    backgroundColor: "rgba(40, 40, 40, 0.9)",
+    marginTop: 100,
+    backgroundColor: theme.IOS__grey,
     borderRadius: 25,
   },
 
   widgetControllContainer: {
     width: "100%",
     height: "5%",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(100, 100, 100)",
-    backgroundColor: "#2F3234",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
     justifyContent: "center",
-    paddingLeft: "7%",
+    alignItems: "flex-end",
+    paddingRight: "7%",
   },
 
   widgetScrollContainer: {
     width: "100%",
-    paddingVertical: 20,
     paddingHorizontal: 20,
-    backgroundColor: "tomato",
   },
 
   menuContainer: {

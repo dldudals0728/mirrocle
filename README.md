@@ -347,3 +347,23 @@ onPanResponderRelease: (event, gesture) => {
 그래서 parseInt()를 이용하여 Int형으로 변환하려 했지만, 처음에는 number형으로 나오지만 그 이후로는 NaN가 확인되었다.
 <br>
 내가 찾아낸 해결책은, position.x을 사용하지 않고, position.x.\_value를 사용하니 제대로 전달되어 if문에 들어가는 것을 확인했다.
+
+## Component의 크기를 가져오는 방법
+
+작업을 하다가 아이패드로 접속을 해보니 컴포넌트의 크기가 부자연스럽게 나오는 것을 확인했다. 이를 수정하기 위해 동적 화면을 제작해야 했다.
+
+```JS
+Dimensions.get("window")
+
+
+const onLayout = (e) => {
+    const layoutInfo = e.nativeEvent.layout;
+    setViewHeight(layoutInfo.height);
+    setViewWidth(layoutInfo.width);
+  };
+<View onLayout={onLayout} />
+```
+
+> 기기의 크기별 컴포넌트의 크기를 알아내어 적용시키는 방법
+> 방법은 위의 두가지 방법이 있다. Dimensions은 진작에 알고 있었지만, onLayout함수가 실행될 때 콜백으로 뷰의 크기를 따로 가져올 수 있는 방법이 있었다.
+> [출처](https://honeystorage.tistory.com/282)

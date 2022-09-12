@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -115,8 +115,15 @@ function PlaceWidgets({ navigation, route }) {
     [".", ".", ".", ".", "."],
     [".", ".", ".", ".", "."],
   ];
+  const [viewHeight, setViewHeight] = useState(0);
+  const [viewWidth, setViewWidth] = useState(0);
+  const onLayout = (e) => {
+    const layoutInfo = e.nativeEvent.layout;
+    setViewHeight(layoutInfo.height);
+    setViewWidth(layoutInfo.width);
+  };
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={onLayout}>
       {grid.map((row, idx) => (
         <View key={idx} style={{ flexDirection: "row", height: "10%" }}>
           {row.map((col, idx) => (
@@ -131,8 +138,8 @@ function PlaceWidgets({ navigation, route }) {
           position: "absolute",
           width: route.params.widthSize,
           height: route.params.heightSize,
-          top: 39,
-          left: 39,
+          top: Math.ceil(viewHeight / 20),
+          left: Math.ceil(viewWidth / 10),
           backgroundColor: "tomato",
           borderWidth: 1,
           transform: [{ translateX: position.x }, { translateY: position.y }],

@@ -26,7 +26,7 @@ export const widgetList = [
     {
       theme: "Ionicons",
       icon: "navigate",
-      message: "네비게이션(도착 예상시간)",
+      message: "네비게이션",
       widthSize: "80%",
       heightSize: "10%",
     },
