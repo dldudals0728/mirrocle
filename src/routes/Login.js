@@ -51,7 +51,7 @@ function Login({ navigation }) {
     }
   };
   const signIn = () => {
-    navigation.reset({ routeName: "SignIn" });
+    navigation.navigate("SignIn");
     clearAll();
   };
   const loginWithGoogle = () => {
