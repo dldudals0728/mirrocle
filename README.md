@@ -367,3 +367,40 @@ const onLayout = (e) => {
 > 기기의 크기별 컴포넌트의 크기를 알아내어 적용시키는 방법
 > 방법은 위의 두가지 방법이 있다. Dimensions은 진작에 알고 있었지만, onLayout함수가 실행될 때 콜백으로 뷰의 크기를 따로 가져올 수 있는 방법이 있었다.
 > [출처](https://honeystorage.tistory.com/282)
+
+## Animated와 PanRsponder를 이용하여 위젯 옮기기 중 튀는 현상 fix
+
+사용자가 위젯의 위치를 드래그로 결정하는데, 위젯을 터치하면 이상한 곳으로 위치가 튀는 경우가 있었다. 이를 고치기 위해 별걸 다 해봤다. 그리고 답을 찾았다 ^^
+
+```JS
+onPanResponderGrant: (event, gesture) => {
+    position.stopAnimation();
+    position.setOffset({
+        x: position.x._value,
+        y: position.y._value,
+    });
+},
+```
+
+위의 코드처럼 Animated 객체인 position에게 stopAnimation()함수를 사용하니 튀는 현상이 사라졌다.
+아마 위젯을 그리드의 올바를 위치로 옮기는데 spring 애니메이션을 사용했는데, 이때 애니메이션이 끝나지 않은 상태에서 터치를 다시 하니 위치가 이상하게 반환된 것 같다. ^^
+
+## Animated와 PanRsponder를 이용하여 위젯 옮기기 중 튀는 현상 fix(2)
+
+위의 버그를 해결하니, 다시 위젯이 튀는 현상이 발생했다.
+위젯을 드래그할 때는 위젯이 튀지 않았지만, 드래그 없이 터치할 경우 이상한 좌표로 이동하게 되는 현상이 나타났다.
+이를 해결하기 위해 onPanResponderRelease를 아래와 같이 변경했다.
+
+```JS
+onPanResponderRelease: (event, gesture) => {
+    if (gesture.dx === 0 && gesture.dy === 0) {
+        return;
+    }
+    position.flattenOffset();
+    ...
+}
+```
+
+결과적으로, 드래그가 일어나지 않았는데 Animated.ValueXY()객체인 position의 flattenOffset() 함수가 문제였다.<br>
+flattenOffset() 때문에 offset이 병합되고 0으로 초기화되어, 아래에 위치를 잡아주는 함수에 영향을 미친 것 같다.<br>
+그래서 나는 두번째 매개변수를 gesture로 받아, dx와 dy가 모두 0이면, 즉 이동한 거리가 존재하지 않으면 return하여 함수가 실행되지 않도록 하였다.

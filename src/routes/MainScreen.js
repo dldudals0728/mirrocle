@@ -38,13 +38,13 @@ function MainScreen({ navigation }) {
     <View style={styles.container}>
       <Modal
         visible={widgetListVisible}
-        animationType="animated"
+        animationType="slide"
         onRequestClose={() => console.log("test")}
         transparent={true}
       >
         <Modal
           visible={widgetDetailVisible}
-          animationType="animated"
+          animationType="slide"
           transparent={true}
         >
           <View
@@ -88,6 +88,7 @@ function MainScreen({ navigation }) {
                 onPress={() => {
                   setWidgetListVisible(!widgetListVisible);
                   setWidgetDetailVisible(!widgetDetailVisible);
+                  setWidgetListBg(!widgetListBg);
                   navigation.navigate("PlaceWidgets", {
                     name: selectedWidget.message,
                     widthSize: selectedWidget.widthSize,

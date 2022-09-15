@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -32,22 +32,42 @@ function PlaceWidgets({ navigation, route }) {
       onMoveShouldSetPanResponder: (evt, gestureState) => true,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
       onPanResponderGrant: (event, gesture) => {
+        // 하... 튀는 문제 해결
+        position.stopAnimation();
         position.setOffset({
           x: position.x._value,
           y: position.y._value,
         });
       },
+      // onPanResponderMove: (event, gesture) => {
+      //   let { dx, dy } = gesture;
+      //   let { moveX, moveY } = gesture;
+      //   const { x0, y0 } = gesture;
+      //   if (moveY >= viewRef.current.height) {
+      //     position.setValue({ x: dx, y: viewRef.current.height });
+      //     position.flattenOffset();
+      //     return;
+      //   } else {
+      //     position.setValue({ x: 0, y: 0 });
+      //     position.setValue({ x: dx, y: dy });
+      //   }
+      // },
       onPanResponderMove: Animated.event(
         [null, { dx: position.x, dy: position.y }],
         {
           useNativeDriver: false,
+          listener: (event, gesture) => {},
         }
       ),
       /**
-       * @todo grid 2~4열에서 "터치" 시 position.x._value의 값이 확 튀어버리는 현상 발생.
+       * @todo grid 2~4열에서 "터치" 시 position.x._value의 값이 확 튀어버리는 현상 발생: stopAnimation()으로 해결
        */
       onPanResponderRelease: (event, gesture) => {
         let currentPosition = 0;
+        // 터치 시 튀는 문제를 해결하니, 터치를 해제할 때 튀는 문제 발생 ==> 해결(원인: flattenOffset())
+        if (gesture.dx === 0 && gesture.dy === 0) {
+          return;
+        }
         position.flattenOffset();
         currentX = Math.round(position.x._value);
         currentY = Math.round(position.y._value);
@@ -117,11 +137,21 @@ function PlaceWidgets({ navigation, route }) {
   ];
   const [viewHeight, setViewHeight] = useState(0);
   const [viewWidth, setViewWidth] = useState(0);
+  const viewRef = useRef({ width: 0, height: 0 });
   const onLayout = (e) => {
     const layoutInfo = e.nativeEvent.layout;
-    setViewHeight(layoutInfo.height);
-    setViewWidth(layoutInfo.width);
+    setViewHeight(() => layoutInfo.height);
+    setViewWidth(() => layoutInfo.width);
+    viewRef.current.width = layoutInfo.width;
+    viewRef.current.height = layoutInfo.height - layoutInfo.y;
+    console.log(layoutInfo);
   };
+  const onLayoutwidget = (e) => {
+    console.log(e.nativeEvent.layout);
+  };
+  useEffect(() => {
+    console.log("viewHeight is updated:", viewHeight);
+  }, [viewHeight]);
   return (
     <View style={styles.container} onLayout={onLayout}>
       {grid.map((row, idx) => (
@@ -145,6 +175,7 @@ function PlaceWidgets({ navigation, route }) {
           transform: [{ translateX: position.x }, { translateY: position.y }],
         }}
         {...panResponder.panHandlers}
+        onLayout={onLayoutwidget}
       >
         <Text>{route.params.name}</Text>
       </AnimatedBox>
