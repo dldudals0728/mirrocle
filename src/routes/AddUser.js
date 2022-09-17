@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Alert,
   Dimensions,
@@ -9,6 +9,8 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   View,
+  TouchableOpacity,
+  Text,
 } from "react-native";
 import { theme } from "../../colors";
 import { Icons } from "../../icons";
@@ -18,6 +20,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ICON_BOX_LENGTH = parseInt(Object.keys(Icons).length / 4 + 1);
 
 function AddUser({ navigation }) {
+  const [isfromedit, setIsFromEdit] = useState();
   const [username, setUsername] = useState("");
   const iconBox = [];
   for (var i = 1; i < ICON_BOX_LENGTH; i++) {
@@ -38,6 +41,16 @@ function AddUser({ navigation }) {
      * @todo 해당 유저를 계정에 연결시킨다.
      */
   };
+  const checkroute = () => {
+    const route = navigation.getState().routes;
+    const pop = route.map((hi) => hi.name);
+    if (pop[parseInt(pop.length) - 2] == "UserEdit") {
+      setIsFromEdit(true);
+    } else {
+      setIsFromEdit(false);
+    }
+  };
+  useEffect(checkroute, []);
 
   return (
     <View style={styles.container}>
@@ -86,9 +99,17 @@ function AddUser({ navigation }) {
       </View>
       <MyButton
         style={{ marginTop: 20 }}
-        text="추가"
+        text={isfromedit ? "수정완료" : "추가"}
         onPress={() => console.log("hi")}
       />
+      <TouchableOpacity>
+        <View
+          style={{ ...styles.btnStyle, display: isfromedit ? "flex" : "none" }}
+        >
+          <Text style={styles.btnTextStyle}>삭제하기</Text>
+        </View>
+      </TouchableOpacity>
+
       <MyButton
         text="돌아가기"
         onPress={() => {
@@ -145,6 +166,24 @@ styles = StyleSheet.create({
   userIconImage: {
     width: 50,
     height: 50,
+  },
+  btnStyle: {
+    textAlign: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+    borderStyle: "solid",
+    borderColor: "black",
+    borderWidth: 1,
+    backgroundColor: theme.baeminBg,
+  },
+
+  btnTextStyle: {
+    fontSize: 16,
+    fontWeight: "700",
   },
 });
 

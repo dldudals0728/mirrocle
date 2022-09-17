@@ -3,7 +3,7 @@ import { theme } from "../../colors";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 
-function MirrocleSettings() {
+function MirrocleSettings({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={{ alignItems: "flex-start", marginBottom: 20 }}>
@@ -15,7 +15,10 @@ function MirrocleSettings() {
          * @todo 시간에 따른 디스플레이 자동 변경! 대박
          */}
         <MyButton text="Mirrocle 시간 설정" />
-        <MyButton text="사용자 관리" />
+        <MyButton
+          text="사용자 관리"
+          onPress={() => navigation.navigate("UserEdit")}
+        />
         <View style={styles.setting}>
           <Text style={styles.title}>Mirrocle S/N</Text>
           <View style={styles.setting__option}>

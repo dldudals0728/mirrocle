@@ -31,7 +31,7 @@ function UserList({ navigation }) {
       {
         text: "I'm Sure",
         onPress: () => {
-          navigation.reset({ routes: [{ name: "AddUser" }] });
+          navigation.navigate("AddUser");
         },
       },
     ]);
