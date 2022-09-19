@@ -1,7 +1,9 @@
 import { StatusBar } from "expo-status-bar";
 import {
+  Animated,
   Dimensions,
   Modal,
+  PanResponder,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Octicons } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { theme } from "../../colors";
@@ -19,6 +21,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;
+const AnimatedBox = Animated.createAnimatedComponent(View);
 
 function MainScreen({ navigation }) {
   const [mirrorList, setMirrorList] = useState([]);
@@ -34,6 +37,115 @@ function MainScreen({ navigation }) {
   useEffect(() => {
     setMirrorList([0, 1, 2]);
   }, []);
+  const detailPosition = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const detailPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => true,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onPanResponderGrant: (event, gesture) => {
+        detailPosition.setOffset({
+          x: detailPosition.x._value,
+          y: detailPosition.y._value,
+        });
+      },
+      // onPanResponderMove: Animated.event([null, { dy: detailPosition.y }], {
+      //   useNativeDriver: false,
+      //   listener: (event, gesture) => {},
+      // }),
+      onPanResponderMove: (event, gesture) => {
+        if (gesture.dy < 0) {
+          return;
+        }
+        detailPosition.setValue({ x: 0, y: gesture.dy });
+      },
+      onPanResponderRelease: (event, gesture) => {
+        console.log("========== event ==========");
+        console.log(event);
+        console.log("========== event ==========");
+        console.log("========== event.nativeEvent ==========");
+        console.log(event.nativeEvent);
+        console.log("========== event.nativeEvent ==========");
+        if (gesture.vy >= 3.5) {
+          setWidgetDetailVisible((prev) => !prev);
+          setTimeout(() => detailPosition.setValue({ x: 0, y: 0 }), 500);
+        } else if (gesture.dy <= 0) {
+          return;
+        } else if (gesture.dy >= 300) {
+          // 이게 계속 이야기되는 함수를 넘겨서 비동기 문제를 해결하는 방법!
+          setWidgetDetailVisible((prev) => !prev);
+          setTimeout(() => detailPosition.setValue({ x: 0, y: 0 }), 500);
+        } else {
+          /**
+           * @todo Animated.decay 사용 방법을 숙지하지 못해 spring 사용. decay로 바꿀 것을 권장
+           */
+          Animated.spring(detailPosition, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: false,
+          }).start();
+        }
+      },
+    })
+  ).current;
+  const isScrollTop = useRef(true);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const listPosition = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const listPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => true,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onPanResponderGrant: (event, gesture) => {
+        listPosition.setOffset({
+          x: listPosition.x._value,
+          y: listPosition.y._value,
+        });
+        if (scrollY._value === 0) {
+          isScrollTop.current = true;
+        } else {
+          isScrollTop.current = false;
+        }
+      },
+      onPanResponderMove: (event, gesture) => {
+        if (gesture.dy < 0) {
+          return;
+        }
+        if (isScrollTop.current) {
+          listPosition.setValue({ x: 0, y: gesture.dy });
+        }
+      },
+      onPanResponderRelease: (event, gesture) => {
+        if (!isScrollTop.current) {
+          return;
+        }
+        if (gesture.vy >= 3.5) {
+          setWidgetListVisible((prev) => !prev);
+          setTimeout(() => listPosition.setValue({ x: 0, y: 0 }), 500);
+        } else if (gesture.dy <= 0) {
+          return;
+        } else if (gesture.dy >= 300) {
+          // 이게 계속 이야기되는 함수를 넘겨서 비동기 문제를 해결하는 방법!
+          setWidgetListVisible((prev) => !prev);
+          setTimeout(() => listPosition.setValue({ x: 0, y: 0 }), 500);
+        } else {
+          /**
+           * @todo Animated.decay 사용 방법을 숙지하지 못해 spring 사용. decay로 바꿀 것을 권장
+           */
+          Animated.spring(listPosition, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: false,
+          }).start();
+        }
+      },
+    })
+  ).current;
+  const onScroll = (event) => {
+    const y = event.nativeEvent.contentOffset.y;
+    scrollY.setValue(y);
+  };
+
   return (
     <View style={styles.container}>
       <Modal
@@ -47,7 +159,7 @@ function MainScreen({ navigation }) {
           animationType="slide"
           transparent={true}
         >
-          <View
+          <AnimatedBox
             style={{
               flex: 1,
               justifyContent: "flex-start",
@@ -55,40 +167,27 @@ function MainScreen({ navigation }) {
               marginTop: 120,
               backgroundColor: theme.IOS__grey,
               borderRadius: 25,
+              transform: [{ translateY: detailPosition.y }],
             }}
+            {...detailPanResponder.panHandlers}
           >
-            <View style={styles.widgetControllContainer}>
-              {/**
-               * widget detail btn
-               */}
-              <TouchableOpacity
-                onPress={() => {
-                  setWidgetDetailVisible(!widgetDetailVisible);
-                  setWidgetListBg(!widgetListBg);
-                }}
-              >
-                <Ionicons
-                  name="ios-close-circle"
-                  color="#808080"
-                  style={{
-                    fontSize: 30,
-                  }}
-                />
-              </TouchableOpacity>
-            </View>
+            <View style={styles.widgetControllContainer} />
+            {/**
+             * widget detail btn
+             */}
             <View
               style={{
                 width: "100%",
                 height: "100%",
                 alignItems: "center",
                 justifyContent: "center",
+                backgroundColor: "tomato",
               }}
             >
               <TouchableOpacity
                 onPress={() => {
                   setWidgetListVisible(!widgetListVisible);
                   setWidgetDetailVisible(!widgetDetailVisible);
-                  setWidgetListBg(!widgetListBg);
                   navigation.navigate("PlaceWidgets", {
                     name: selectedWidget.message,
                     widthSize: selectedWidget.widthSize,
@@ -108,34 +207,30 @@ function MainScreen({ navigation }) {
                 <Text style={{ color: "white" }}>{selectedWidget.message}</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </AnimatedBox>
         </Modal>
-        <View style={styles.widgetContainer}>
-          <View style={styles.widgetControllContainer}>
-            {/**
-             * widget list btn
-             */}
-            {widgetListBg ? null : (
-              <TouchableOpacity
-                onPress={() => {
-                  setWidgetListVisible(!widgetListVisible);
-                }}
-              >
-                <Ionicons
-                  name="ios-close-circle"
-                  color="#808080"
-                  style={{
-                    fontSize: 30,
-                  }}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-          {/* setVisible: 이게되네 */}
-          {/* <Widgets navigation={navigation} setVisible={setWidgetListVisible} /> */}
+        <AnimatedBox
+          /**
+           * @todo widgetDetailModal이 앞으로 왔을 때, 폭이 줄어드는 애니메이션 넣으면 good
+           */
+          style={{
+            ...styles.widgetContainer,
+            transform: [{ translateY: listPosition.y }],
+          }}
+        >
+          <View style={styles.widgetControllContainer} />
           <ScrollView
             style={styles.widgetScrollContainer}
             showsVerticalScrollIndicator={false}
+            scrollEventThrottle={1}
+            {...listPanResponder.panHandlers}
+            onScroll={onScroll}
+            // bounces: 위(또는 아래)에 컴포넌트가 없을 경우 움직이지 X
+            /**
+             * @todo 리스트를 스와이프 하는중에는 true, 닫기 위한 스와이프는 false로 적용되도록 하는 로직 있으면 good!
+             */
+            // bounces={!isScrollTop.current}
+            bounces={false}
           >
             {widgetList.map((widgetRow, idx) => (
               <View
@@ -152,7 +247,6 @@ function MainScreen({ navigation }) {
                     onPress={() => {
                       setWidgetDetailVisible(!widgetDetailVisible);
                       setSelectedWidget(widget);
-                      setWidgetListBg(!widgetListBg);
                     }}
                     style={{
                       justifyContent: "center",
@@ -182,7 +276,7 @@ function MainScreen({ navigation }) {
               </View>
             ))}
           </ScrollView>
-        </View>
+        </AnimatedBox>
       </Modal>
       <Modal
         visible={menuVisible}
@@ -316,11 +410,11 @@ const styles = StyleSheet.create({
   },
 
   widgetControllContainer: {
-    width: "100%",
-    height: "5%",
-    justifyContent: "center",
-    alignItems: "flex-end",
-    paddingRight: "7%",
+    backgroundColor: "grey",
+    width: "20%",
+    height: 5,
+    borderRadius: 20,
+    marginVertical: 10,
   },
 
   widgetScrollContainer: {

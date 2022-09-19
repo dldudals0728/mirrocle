@@ -404,3 +404,27 @@ onPanResponderRelease: (event, gesture) => {
 결과적으로, 드래그가 일어나지 않았는데 Animated.ValueXY()객체인 position의 flattenOffset() 함수가 문제였다.<br>
 flattenOffset() 때문에 offset이 병합되고 0으로 초기화되어, 아래에 위치를 잡아주는 함수에 영향을 미친 것 같다.<br>
 그래서 나는 두번째 매개변수를 gesture로 받아, dx와 dy가 모두 0이면, 즉 이동한 거리가 존재하지 않으면 return하여 함수가 실행되지 않도록 하였다.
+
+## ScrollView onResponderMove error
+
+```
+Expected `onResponderMove` listener to be a function, instead got a value of `object` type.
+```
+
+ScrollView의 onResponderMove에 함수를 이용하여 넘겨주어야 하는데, obj형식으로 넘겨주어 발생하는 에러이다.
+
+wrong code
+
+```JS
+<ScrollView
+    onResponderMove={listPanResponder.current.panHandlers}
+>
+```
+
+correct code
+
+```JS
+<ScrollView
+    onResponderMove={() => listPanResponder.current.panHandlers}
+>
+```
