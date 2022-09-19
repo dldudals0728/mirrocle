@@ -8,6 +8,8 @@ import {
   View,
 } from "react-native";
 import { theme } from "../../colors";
+import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 const AnimatedBox = Animated.createAnimatedComponent(View);
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -170,14 +172,22 @@ function PlaceWidgets({ navigation, route }) {
           height: route.params.heightSize,
           top: Math.ceil(viewHeight / 20),
           left: Math.ceil(viewWidth / 10),
-          backgroundColor: "tomato",
+          backgroundColor: "rgba(128, 128, 128, 0.3)",
+          borderRadius: 15,
           borderWidth: 1,
           transform: [{ translateX: position.x }, { translateY: position.y }],
+          justifyContent: "center",
+          alignItems: "center",
         }}
         {...panResponder.panHandlers}
         onLayout={onLayoutwidget}
       >
-        <Text>{route.params.name}</Text>
+        <Text style={{ color: "white" }}>{route.params.name}</Text>
+        {route.params.theme == "Ionicons" ? (
+          <Ionicons name={route.params.icon} size={36} color="white" />
+        ) : (
+          <Feather name={route.params.icon} size={36} color="white" />
+        )}
       </AnimatedBox>
     </View>
   );

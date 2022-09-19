@@ -4,6 +4,7 @@ import {
   Dimensions,
   Modal,
   PanResponder,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,13 +16,14 @@ import { useEffect, useRef, useState } from "react";
 import { Octicons } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { theme } from "../../colors";
-import { widgetList } from "../../Widgets";
+import { widgetList } from "../../widgets";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 20;
 const AnimatedBox = Animated.createAnimatedComponent(View);
+const OS = Platform.OS;
 
 function MainScreen({ navigation }) {
   const [mirrorList, setMirrorList] = useState([]);
@@ -30,7 +32,6 @@ function MainScreen({ navigation }) {
   const [widgetListVisible, setWidgetListVisible] = useState(false);
   const [widgetDetailVisible, setWidgetDetailVisible] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState({});
-  const [widgetListBg, setWidgetListBg] = useState(false);
   const paging = (event) => {
     setPage(event.nativeEvent.contentOffset.x);
   };
@@ -61,12 +62,12 @@ function MainScreen({ navigation }) {
         detailPosition.setValue({ x: 0, y: gesture.dy });
       },
       onPanResponderRelease: (event, gesture) => {
-        console.log("========== event ==========");
-        console.log(event);
-        console.log("========== event ==========");
-        console.log("========== event.nativeEvent ==========");
-        console.log(event.nativeEvent);
-        console.log("========== event.nativeEvent ==========");
+        // console.log("========== event ==========");
+        // console.log(event);
+        // console.log("========== event ==========");
+        // console.log("========== event.nativeEvent ==========");
+        // console.log(event.nativeEvent);
+        // console.log("========== event.nativeEvent ==========");
         if (gesture.vy >= 3.5) {
           setWidgetDetailVisible((prev) => !prev);
           setTimeout(() => detailPosition.setValue({ x: 0, y: 0 }), 500);
@@ -95,7 +96,9 @@ function MainScreen({ navigation }) {
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => true,
       onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onMoveShouldSetPanResponder: (evt, gestureState) => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return !(gestureState.dx === 0 && gestureState.dy === 0);
+      },
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
       onPanResponderGrant: (event, gesture) => {
         listPosition.setOffset({
@@ -151,13 +154,20 @@ function MainScreen({ navigation }) {
       <Modal
         visible={widgetListVisible}
         animationType="slide"
-        onRequestClose={() => console.log("test")}
         transparent={true}
+        onRequestClose={() =>
+          OS === "android" ? setWidgetListVisible(!widgetListVisible) : null
+        }
       >
         <Modal
           visible={widgetDetailVisible}
           animationType="slide"
           transparent={true}
+          onRequestClose={() =>
+            OS === "android"
+              ? setWidgetDetailVisible(!widgetDetailVisible)
+              : null
+          }
         >
           <AnimatedBox
             style={{
@@ -169,7 +179,6 @@ function MainScreen({ navigation }) {
               borderRadius: 25,
               transform: [{ translateY: detailPosition.y }],
             }}
-            {...detailPanResponder.panHandlers}
           >
             <View style={styles.widgetControllContainer} />
             {/**
@@ -181,31 +190,71 @@ function MainScreen({ navigation }) {
                 height: "100%",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: "tomato",
               }}
             >
-              <TouchableOpacity
-                onPress={() => {
-                  setWidgetListVisible(!widgetListVisible);
-                  setWidgetDetailVisible(!widgetDetailVisible);
-                  navigation.navigate("PlaceWidgets", {
-                    name: selectedWidget.message,
-                    widthSize: selectedWidget.widthSize,
-                    heightSize: selectedWidget.heightSize,
-                  });
-                }}
+              <ScrollView
+                horizontal
+                pagingEnabled
+                {...(OS === "ios"
+                  ? { ...detailPanResponder.panHandlers }
+                  : null)}
               >
-                {selectedWidget.theme == "Ionicons" ? (
-                  <Ionicons
-                    name={selectedWidget.icon}
-                    size={80}
-                    color="white"
-                  />
-                ) : (
-                  <Feather name={selectedWidget.icon} size={80} color="white" />
-                )}
-                <Text style={{ color: "white" }}>{selectedWidget.message}</Text>
-              </TouchableOpacity>
+                <View
+                  style={{
+                    alignItems: "center",
+                    width: SCREEN_WIDTH,
+                  }}
+                >
+                  <Text style={{ fontSize: 26, color: "white", marginTop: 50 }}>
+                    {selectedWidget.message}
+                  </Text>
+                  <View
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: -80,
+                    }}
+                  >
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "rgba(128, 128, 128, 0.3)",
+                        borderRadius: 10,
+                        width: 200,
+                        height: 200,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                      onPress={() => {
+                        setWidgetListVisible(!widgetListVisible);
+                        setWidgetDetailVisible(!widgetDetailVisible);
+                        navigation.navigate("PlaceWidgets", {
+                          name: selectedWidget.message,
+                          widthSize: selectedWidget.widthSize,
+                          heightSize: selectedWidget.heightSize,
+                          theme: selectedWidget.theme,
+                          icon: selectedWidget.icon,
+                        });
+                      }}
+                    >
+                      {selectedWidget.theme == "Ionicons" ? (
+                        <Ionicons
+                          name={selectedWidget.icon}
+                          size={80}
+                          color="white"
+                        />
+                      ) : (
+                        <Feather
+                          name={selectedWidget.icon}
+                          size={80}
+                          color="white"
+                        />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ScrollView>
             </View>
           </AnimatedBox>
         </Modal>
@@ -223,14 +272,16 @@ function MainScreen({ navigation }) {
             style={styles.widgetScrollContainer}
             showsVerticalScrollIndicator={false}
             scrollEventThrottle={1}
-            {...listPanResponder.panHandlers}
-            onScroll={onScroll}
+            {...(OS === "ios" ? { ...listPanResponder.panHandlers } : null)}
+            // onScroll={onScroll}
+            onScroll={OS === "ios" ? onScroll : null}
             // bounces: 위(또는 아래)에 컴포넌트가 없을 경우 움직이지 X
             /**
              * @todo 리스트를 스와이프 하는중에는 true, 닫기 위한 스와이프는 false로 적용되도록 하는 로직 있으면 good!
              */
             // bounces={!isScrollTop.current}
             bounces={false}
+            overScrollMode="never"
           >
             {widgetList.map((widgetRow, idx) => (
               <View
@@ -281,8 +332,10 @@ function MainScreen({ navigation }) {
       <Modal
         visible={menuVisible}
         animationType="fade"
-        onRequestClose={() => console.log("menu test")}
         transparent={true}
+        onRequestClose={() =>
+          OS === "android" ? setMenuVisible(!menuVisible) : null
+        }
       >
         <Pressable
           style={{
@@ -372,7 +425,7 @@ function MainScreen({ navigation }) {
             height: "100%",
             justifyContent: "center",
             alignItems: "center",
-            marginTop: -6,
+            marginTop: OS === "ios" ? -6 : -14,
           }}
         >
           <Text
