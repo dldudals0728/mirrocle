@@ -1,11 +1,11 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { theme } from "../../colors";
 
-function MyButton({ text, onPress, style }) {
+function MyButton({ text, onPress, style, textStyle }) {
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={{ ...styles.btnStyle, ...style }}>
-        <Text style={styles.btnTextStyle}>{text}</Text>
+        <Text style={{ ...styles.btnTextStyle, ...textStyle }}>{text}</Text>
       </View>
     </TouchableOpacity>
   );
