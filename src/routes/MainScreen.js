@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { Octicons } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { theme } from "../../colors";
-import { widgetList } from "../../widgets";
+import { widgetList, widgetSizeList } from "../../widgets";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -185,68 +185,107 @@ function MainScreen({ navigation }) {
             {/**
              * widget detail btn
              */}
-            <ScrollView
-              horizontal
-              pagingEnabled
-              style={{ backgroundColor: "tomato" }}
-              {...(OS === "ios" ? { ...detailPanResponder.panHandlers } : null)}
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "space-around",
+              }}
             >
               <View
                 style={{
+                  flex: 1,
+                  justifyContent: "flex-end",
                   alignItems: "center",
-                  width: SCREEN_WIDTH,
                 }}
               >
-                <Text style={{ fontSize: 26, color: "white", marginTop: 50 }}>
+                <Text style={{ fontSize: 26, color: "white" }}>
                   {selectedWidget.message}
                 </Text>
-                <View
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    marginTop: -80,
-                  }}
-                >
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "rgba(128, 128, 128, 0.3)",
-                      borderRadius: 10,
-                      width: 200,
-                      height: 200,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                    onPress={() => {
-                      setWidgetListVisible(!widgetListVisible);
-                      setWidgetDetailVisible(!widgetDetailVisible);
-                      navigation.navigate("PlaceWidgets", {
-                        name: selectedWidget.message,
-                        widthSize: selectedWidget.widthSize,
-                        heightSize: selectedWidget.heightSize,
-                        theme: selectedWidget.theme,
-                        icon: selectedWidget.icon,
-                      });
-                    }}
-                  >
-                    {selectedWidget.theme == "Ionicons" ? (
-                      <Ionicons
-                        name={selectedWidget.icon}
-                        size={80}
-                        color="white"
-                      />
-                    ) : (
-                      <Feather
-                        name={selectedWidget.icon}
-                        size={80}
-                        color="white"
-                      />
-                    )}
-                  </TouchableOpacity>
-                </View>
               </View>
-            </ScrollView>
+              <View style={{ flex: 5 }}>
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  /**
+                   * @todo scrollView가 horizontal일 경우 의도치 않은 동작이 생겨 보류. IOS일 경우 버튼을 이용하여 close
+                   */
+                  // {...(OS === "ios"
+                  //   ? { ...detailPanResponder.panHandlers }
+                  //   : null)}
+                >
+                  {widgetSizeList.width.map((width, key) =>
+                    widgetSizeList.height.map((height, key) => (
+                      <View
+                        key={key}
+                        style={{
+                          width: SCREEN_WIDTH,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: "rgba(128, 128, 128, 0.3)",
+                            borderRadius: 10,
+                            width: 200,
+                            height: 200,
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                          onPress={() => {
+                            setWidgetListVisible(!widgetListVisible);
+                            setWidgetDetailVisible(!widgetDetailVisible);
+                            navigation.navigate("PlaceWidgets", {
+                              name: selectedWidget.message,
+                              widthSize: width,
+                              heightSize: height,
+                              theme: selectedWidget.theme,
+                              icon: selectedWidget.icon,
+                            });
+                          }}
+                        >
+                          {selectedWidget.theme == "Ionicons" ? (
+                            <Ionicons
+                              name={selectedWidget.icon}
+                              size={80}
+                              color="white"
+                            />
+                          ) : (
+                            <Feather
+                              name={selectedWidget.icon}
+                              size={80}
+                              color="white"
+                            />
+                          )}
+                        </TouchableOpacity>
+                        <Text style={{ color: "white", fontSize: 28 }}>
+                          {width.length === 3
+                            ? parseInt(width.slice(0, 2)) / 2
+                            : parseInt(width.slice(0, 3)) / 2}{" "}
+                          x{" "}
+                          {height.length === 3
+                            ? height.slice(0, 2)
+                            : height.slice(0, 3)}
+                        </Text>
+                      </View>
+                    ))
+                  )}
+                </ScrollView>
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => setWidgetDetailVisible(!widgetDetailVisible)}
+                >
+                  <Text style={{ fontSize: 28, color: "white" }}>❌</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </AnimatedBox>
         </Modal>
         <AnimatedBox
