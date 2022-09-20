@@ -56,6 +56,7 @@ function MainScreen({ navigation }) {
       //   listener: (event, gesture) => {},
       // }),
       onPanResponderMove: (event, gesture) => {
+        console.log(gesture);
         if (gesture.dy < 0) {
           return;
         }
@@ -184,78 +185,68 @@ function MainScreen({ navigation }) {
             {/**
              * widget detail btn
              */}
-            <View
-              style={{
-                width: "100%",
-                height: "100%",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+            <ScrollView
+              horizontal
+              pagingEnabled
+              style={{ backgroundColor: "tomato" }}
+              {...(OS === "ios" ? { ...detailPanResponder.panHandlers } : null)}
             >
-              <ScrollView
-                horizontal
-                pagingEnabled
-                {...(OS === "ios"
-                  ? { ...detailPanResponder.panHandlers }
-                  : null)}
+              <View
+                style={{
+                  alignItems: "center",
+                  width: SCREEN_WIDTH,
+                }}
               >
+                <Text style={{ fontSize: 26, color: "white", marginTop: 50 }}>
+                  {selectedWidget.message}
+                </Text>
                 <View
                   style={{
+                    width: "100%",
+                    height: "100%",
+                    justifyContent: "center",
                     alignItems: "center",
-                    width: SCREEN_WIDTH,
+                    marginTop: -80,
                   }}
                 >
-                  <Text style={{ fontSize: 26, color: "white", marginTop: 50 }}>
-                    {selectedWidget.message}
-                  </Text>
-                  <View
+                  <TouchableOpacity
                     style={{
-                      width: "100%",
-                      height: "100%",
+                      backgroundColor: "rgba(128, 128, 128, 0.3)",
+                      borderRadius: 10,
+                      width: 200,
+                      height: 200,
                       justifyContent: "center",
                       alignItems: "center",
-                      marginTop: -80,
+                    }}
+                    onPress={() => {
+                      setWidgetListVisible(!widgetListVisible);
+                      setWidgetDetailVisible(!widgetDetailVisible);
+                      navigation.navigate("PlaceWidgets", {
+                        name: selectedWidget.message,
+                        widthSize: selectedWidget.widthSize,
+                        heightSize: selectedWidget.heightSize,
+                        theme: selectedWidget.theme,
+                        icon: selectedWidget.icon,
+                      });
                     }}
                   >
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: "rgba(128, 128, 128, 0.3)",
-                        borderRadius: 10,
-                        width: 200,
-                        height: 200,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                      onPress={() => {
-                        setWidgetListVisible(!widgetListVisible);
-                        setWidgetDetailVisible(!widgetDetailVisible);
-                        navigation.navigate("PlaceWidgets", {
-                          name: selectedWidget.message,
-                          widthSize: selectedWidget.widthSize,
-                          heightSize: selectedWidget.heightSize,
-                          theme: selectedWidget.theme,
-                          icon: selectedWidget.icon,
-                        });
-                      }}
-                    >
-                      {selectedWidget.theme == "Ionicons" ? (
-                        <Ionicons
-                          name={selectedWidget.icon}
-                          size={80}
-                          color="white"
-                        />
-                      ) : (
-                        <Feather
-                          name={selectedWidget.icon}
-                          size={80}
-                          color="white"
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
+                    {selectedWidget.theme == "Ionicons" ? (
+                      <Ionicons
+                        name={selectedWidget.icon}
+                        size={80}
+                        color="white"
+                      />
+                    ) : (
+                      <Feather
+                        name={selectedWidget.icon}
+                        size={80}
+                        color="white"
+                      />
+                    )}
+                  </TouchableOpacity>
                 </View>
-              </ScrollView>
-            </View>
+              </View>
+            </ScrollView>
           </AnimatedBox>
         </Modal>
         <AnimatedBox

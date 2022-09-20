@@ -13,19 +13,27 @@ import { Ionicons } from "@expo/vector-icons";
 
 const AnimatedBox = Animated.createAnimatedComponent(View);
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const GRID_MARGIN_TOP = 40;
+const GRID_MARGIN_BOTTOM = 120;
 
 function PlaceWidgets({ navigation, route }) {
   const gridWidth = Math.round(SCREEN_WIDTH / 5);
-  const gridHeight = Math.round((SCREEN_HEIGHT - 160) / 10);
+  const gridHeight = Math.round(
+    (SCREEN_HEIGHT - (GRID_MARGIN_TOP + GRID_MARGIN_BOTTOM)) / 10
+  );
   const gridStartWidth = 0;
   const gridStartHeight = 0;
   // 위젯 별 크기에 따른 최대 범위 제한: 검은색 배경 바깥쪽에 배치되지 않도록 제어
   const gridEndWidth =
-    SCREEN_WIDTH - gridWidth * (parseInt(route.params.widthSize[0]) / 2 + 1);
+    SCREEN_WIDTH - gridWidth * (parseInt(route.params.widthSize[0]) / 2);
   const gridEndHeight =
     SCREEN_HEIGHT -
-    160 -
-    gridHeight * (parseInt(route.params.heightSize[0]) + 1);
+    (GRID_MARGIN_TOP + GRID_MARGIN_BOTTOM) -
+    gridHeight * parseInt(route.params.heightSize[0]);
+
+  const widgetSizeRef = useRef({ width: 0, height: 0 });
+  const gridSizeRef = useRef({ width: 0, height: 0 });
+
   const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const panResponder = useRef(
     PanResponder.create({
@@ -45,8 +53,8 @@ function PlaceWidgets({ navigation, route }) {
       //   let { dx, dy } = gesture;
       //   let { moveX, moveY } = gesture;
       //   const { x0, y0 } = gesture;
-      //   if (moveY >= viewRef.current.height) {
-      //     position.setValue({ x: dx, y: viewRef.current.height });
+      //   if (moveY >= gridSizeRef.current.height) {
+      //     position.setValue({ x: dx, y: gridSizeRef.current.height });
       //     position.flattenOffset();
       //     return;
       //   } else {
@@ -66,6 +74,10 @@ function PlaceWidgets({ navigation, route }) {
        */
       onPanResponderRelease: (event, gesture) => {
         let currentPosition = 0;
+        const location = {
+          row: { value: 0, setting: false },
+          column: { value: 0, setting: false },
+        };
         // 터치 시 튀는 문제를 해결하니, 터치를 해제할 때 튀는 문제 발생 ==> 해결(원인: flattenOffset())
         if (gesture.dx === 0 && gesture.dy === 0) {
           return;
@@ -75,48 +87,62 @@ function PlaceWidgets({ navigation, route }) {
         currentY = Math.round(position.y._value);
         let moveX = NaN;
         let moveY = NaN;
-        const setting = [false, false];
+        // 각 위젯의 크기별로 positioning
+        const row =
+          widgetSizeRef.current.width /
+          (parseInt(route.params.widthSize[0]) / 2);
+        const col =
+          widgetSizeRef.current.height / parseInt(route.params.heightSize[0]);
+        // const setting = [false, false];
         while (true) {
-          if (currentPosition >= 50) {
-            // 무한루프 방지. Animated가 튀는 경우가 있음.
-            break;
-          }
-
           if (currentX <= gridStartWidth) {
             moveX = gridStartWidth;
           } else if (currentX >= gridEndWidth) {
-            moveX = gridEndWidth;
+            moveX = row * (5 - parseInt(route.params.widthSize[0]) / 2);
           } else if (
-            currentX >=
-              gridWidth * currentPosition - Math.round(gridWidth / 2) &&
-            currentX <
-              gridWidth * (currentPosition + 1) - Math.round(gridWidth / 2)
+            currentX >= row * currentPosition - Math.round(row / 2) &&
+            currentX < row * (currentPosition + 1) - Math.round(row / 2)
           ) {
-            moveX = gridWidth * currentPosition;
+            moveX = row * currentPosition;
+            location.row.value = currentPosition;
           }
 
           if (currentY <= gridStartHeight) {
             moveY = gridStartHeight;
           } else if (currentY >= gridEndHeight) {
-            moveY = gridEndHeight;
+            moveY = col * (10 - parseInt(route.params.heightSize[0]));
           } else if (
-            currentY >=
-              gridHeight * currentPosition - Math.round(gridHeight / 2) &&
-            currentY <
-              gridHeight * (currentPosition + 1) - Math.round(gridHeight / 2)
+            currentY >= col * currentPosition - Math.round(col / 2) &&
+            currentY < col * (currentPosition + 1) - Math.round(col / 2)
           ) {
-            moveY = gridHeight * currentPosition;
+            moveY = col * currentPosition;
+            location.column.value = currentPosition;
           }
           if (!isNaN(moveX)) {
-            setting[0] = true;
+            /**
+             * @todo location.row(column).setting 변경을 저장버튼을 눌렀을 때 좌표를 받아서 저장하도록 해야 함
+             */
+            location.row.setting = true;
           }
           if (!isNaN(moveY)) {
-            setting[1] = true;
+            location.column.setting = true;
           }
-          if (setting[0] === true && setting[1] === true) {
+          if (
+            location.row.setting === true &&
+            location.column.setting === true
+          ) {
+            console.log("location.row.value:", location.row.value);
+            console.log("location.column.value:", location.column.value);
             break;
           }
           currentPosition += 1;
+
+          if (currentPosition === 50) {
+            /**
+             * @todo 예외처리
+             */
+            break;
+          }
         }
         Animated.spring(position, {
           toValue: { x: moveX, y: moveY },
@@ -137,31 +163,22 @@ function PlaceWidgets({ navigation, route }) {
     [".", ".", ".", ".", "."],
     [".", ".", ".", ".", "."],
   ];
-  const [viewHeight, setViewHeight] = useState(0);
-  const [viewWidth, setViewWidth] = useState(0);
-  const viewRef = useRef({ width: 0, height: 0 });
   const onLayout = (e) => {
     const layoutInfo = e.nativeEvent.layout;
-    setViewHeight(() => layoutInfo.height);
-    setViewWidth(() => layoutInfo.width);
-    viewRef.current.width = layoutInfo.width;
-    viewRef.current.height = layoutInfo.height - layoutInfo.y;
-    console.log(layoutInfo);
+    gridSizeRef.current.width = layoutInfo.width;
+    gridSizeRef.current.height = layoutInfo.height;
   };
   const onLayoutwidget = (e) => {
-    console.log(e.nativeEvent.layout);
+    const layoutInfo = e.nativeEvent.layout;
+    widgetSizeRef.current.width = layoutInfo.width;
+    widgetSizeRef.current.height = layoutInfo.height;
   };
-  useEffect(() => {
-    console.log("viewHeight is updated:", viewHeight);
-  }, [viewHeight]);
   return (
     <View style={styles.container} onLayout={onLayout}>
       {grid.map((row, idx) => (
         <View key={idx} style={{ flexDirection: "row", height: "10%" }}>
           {row.map((col, idx) => (
-            <View key={idx} style={styles.gridStyle}>
-              <Text style={{ color: "white", fontSize: 18 }}>{col}</Text>
-            </View>
+            <View key={idx} style={styles.gridStyle} />
           ))}
         </View>
       ))}
@@ -170,8 +187,8 @@ function PlaceWidgets({ navigation, route }) {
           position: "absolute",
           width: route.params.widthSize,
           height: route.params.heightSize,
-          top: Math.ceil(viewHeight / 20),
-          left: Math.ceil(viewWidth / 10),
+          top: 0,
+          left: 0,
           backgroundColor: "rgba(128, 128, 128, 0.3)",
           borderRadius: 15,
           borderWidth: 1,
@@ -198,9 +215,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "black",
     justifyContent: "center",
-    marginTop: 40,
-    marginBottom: 120,
-    borderWidth: 2,
+    marginTop: GRID_MARGIN_TOP,
+    marginBottom: GRID_MARGIN_BOTTOM,
     borderColor: theme.grey,
   },
 
@@ -210,8 +226,9 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    // borderWidth: 1,
-    // borderColor: "white",
+    borderWidth: 0.3,
+    borderColor: "rgba(128, 128, 128, 0.3)",
+    borderStyle: "solid",
   },
 });
 
