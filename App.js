@@ -35,7 +35,13 @@ const App = () => {
         <Stack.Screen name="MirrocleSettings" component={MirrocleSettings} />
         <Stack.Screen name="AddUser" component={AddUser} /> */}
         <Stack.Screen name="MainScreen" component={MainScreen} />
-        <Stack.Screen name="PlaceWidgets" component={PlaceWidgets} />
+        <Stack.Screen
+          name="PlaceWidgets"
+          component={PlaceWidgets}
+          options={() => ({
+            gestureEnabled: false,
+          })}
+        />
         <Stack.Screen name="UserEdit" component={UserEdit} />
       </Stack.Navigator>
     </NavigationContainer>

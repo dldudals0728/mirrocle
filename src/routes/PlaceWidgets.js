@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import {
+  Alert,
   Animated,
+  BackHandler,
   Dimensions,
   PanResponder,
+  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -18,6 +21,22 @@ const GRID_MARGIN_TOP = 40;
 const GRID_MARGIN_BOTTOM = 120;
 
 function PlaceWidgets({ navigation, route }) {
+  BackHandler.addEventListener("hardwareBackPress", () => true);
+  const gridSizeRef = useRef({ width: 0, height: 0 });
+  const widgetSizeRef = useRef({ width: 0, height: 0 });
+
+  const widgetRowCnt =
+    parseInt(
+      route.params.widthSize.length === 3
+        ? route.params.widthSize[0]
+        : route.params.widthSize.slice(0, 2)
+    ) / 2;
+  const widgetColCnt = parseInt(
+    route.params.heightSize.length === 3
+      ? route.params.heightSize[0]
+      : route.params.heightSize.slice(0, 2)
+  );
+
   const gridWidth = Math.round(SCREEN_WIDTH / 5);
   const gridHeight = Math.round(
     (SCREEN_HEIGHT - (GRID_MARGIN_TOP + GRID_MARGIN_BOTTOM)) / 10
@@ -25,15 +44,11 @@ function PlaceWidgets({ navigation, route }) {
   const gridStartWidth = 0;
   const gridStartHeight = 0;
   // 위젯 별 크기에 따른 최대 범위 제한: 검은색 배경 바깥쪽에 배치되지 않도록 제어
-  const gridEndWidth =
-    SCREEN_WIDTH - gridWidth * (parseInt(route.params.widthSize[0]) / 2);
+  const gridEndWidth = SCREEN_WIDTH - gridWidth * widgetRowCnt;
   const gridEndHeight =
     SCREEN_HEIGHT -
     (GRID_MARGIN_TOP + GRID_MARGIN_BOTTOM) -
-    gridHeight * parseInt(route.params.heightSize[0]);
-
-  const gridSizeRef = useRef({ width: 0, height: 0 });
-  const widgetSizeRef = useRef({ width: 0, height: 0 });
+    gridHeight * widgetColCnt;
 
   const onLayoutGrid = (e) => {
     const layoutInfo = e.nativeEvent.layout;
@@ -97,33 +112,32 @@ function PlaceWidgets({ navigation, route }) {
         let moveY = NaN;
         const setting = [false, false];
         // 각 위젯의 크기별로 positioning
-        const row =
-          widgetSizeRef.current.width /
-          (parseInt(route.params.widthSize[0]) / 2);
-        const col =
-          widgetSizeRef.current.height / parseInt(route.params.heightSize[0]);
+        const gridX = widgetSizeRef.current.width / widgetRowCnt;
+        const gridY = widgetSizeRef.current.height / widgetColCnt;
+        const widgetCellWidth = Math.floor(gridX);
+        const widgetCellHeight = Math.floor(gridY);
         // const setting = [false, false];
         while (true) {
           if (currentX <= gridStartWidth) {
             moveX = gridStartWidth;
           } else if (currentX >= gridEndWidth) {
-            moveX = row * (5 - parseInt(route.params.widthSize[0]) / 2);
+            moveX = gridX * (5 - widgetRowCnt);
           } else if (
-            currentX >= row * currentPosition - Math.round(row / 2) &&
-            currentX < row * (currentPosition + 1) - Math.round(row / 2)
+            currentX >= gridX * currentPosition - Math.round(gridX / 2) &&
+            currentX < gridX * (currentPosition + 1) - Math.round(gridX / 2)
           ) {
-            moveX = row * currentPosition;
+            moveX = gridX * currentPosition;
           }
 
           if (currentY <= gridStartHeight) {
             moveY = gridStartHeight;
           } else if (currentY >= gridEndHeight) {
-            moveY = col * (10 - parseInt(route.params.heightSize[0]));
+            moveY = gridY * (10 - widgetColCnt);
           } else if (
-            currentY >= col * currentPosition - Math.round(col / 2) &&
-            currentY < col * (currentPosition + 1) - Math.round(col / 2)
+            currentY >= gridY * currentPosition - Math.round(gridY / 2) &&
+            currentY < gridY * (currentPosition + 1) - Math.round(gridY / 2)
           ) {
-            moveY = col * currentPosition;
+            moveY = gridY * currentPosition;
           }
           if (!isNaN(moveX)) {
             /**
@@ -149,7 +163,16 @@ function PlaceWidgets({ navigation, route }) {
         Animated.spring(position, {
           toValue: { x: moveX, y: moveY },
           useNativeDriver: false,
-        }).start();
+        }).start(() => {
+          const leftTopX = parseInt(Math.ceil(moveX) / widgetCellWidth);
+          const leftTopY = parseInt(Math.ceil(moveY) / widgetCellHeight);
+          const rightBottomX = leftTopX + (widgetRowCnt - 1);
+          const rightBottomY = leftTopY + (widgetColCnt - 1);
+          console.log("leftTopX", leftTopX);
+          console.log("leftTopY", leftTopY);
+          console.log("rightBottomX", rightBottomX);
+          console.log("rightBottomY", rightBottomY);
+        });
       },
     })
   ).current;
@@ -167,23 +190,13 @@ function PlaceWidgets({ navigation, route }) {
   ];
 
   const saveWidgetInfo = () => {
-    const widgetRowCnt =
-      parseInt(
-        route.params.widthSize.length === 3
-          ? route.params.widthSize[0]
-          : route.params.widthSize.slice(0, 2)
-      ) / 2;
-    const widgetColCnt = parseInt(
-      route.params.heightSize.length === 3
-        ? route.params.heightSize[0]
-        : route.params.heightSize.slice(0, 2)
-    );
     const widgetCellWidth = Math.floor(
       widgetSizeRef.current.width / widgetRowCnt
     );
     const widgetCellHeight = Math.floor(
       widgetSizeRef.current.height / widgetColCnt
     );
+
     const positionX = Math.ceil(position.x._value);
     const positionY = Math.ceil(position.y._value);
 
@@ -268,9 +281,24 @@ function PlaceWidgets({ navigation, route }) {
           textStyle={{
             color: "white",
           }}
-          onPress={() => navigation.navigate("MainScreen")}
+          onPress={() => {
+            Alert.alert("돌아가기", "위젯 배치를 취소하시겠습니까?", [
+              {
+                text: "cancel",
+              },
+              {
+                text: "OK",
+                onPress: () => {
+                  // reset으로 하니까 화면이 오른쪽에서 나와서 뒤로가기의 느낌이 안산다...
+                  // navigation.reset({ routes: [{ name: "MainScreen" }] });
+                  navigation.navigate("MainScreen");
+                },
+              },
+            ]);
+          }}
         />
       </View>
+      <StatusBar barStyle="light-content" />
     </View>
   );
 }

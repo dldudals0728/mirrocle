@@ -428,3 +428,60 @@ correct code
     onResponderMove={() => listPanResponder.current.panHandlers}
 >
 ```
+
+## screen에서 android의 back button, ios의 back gesture를 막는 방법
+
+지금까지 해당 방법을 사용하기 위해서 아래와 같은 코드를 사용했다.
+
+```JS
+navigation.reset({ routes: [{ name: "Login" }] });
+```
+
+> 위의 코드는 해당 component로 이동하면서, 현재의 화면을 스택에서 지움으로 Login 화면이 스택의 가장 아래에 있도록 하는 코드이다.
+
+그런데 MainScreen이 말 그대로 메인화면이기 때문에 스택에서 지우고 싶지 않았다.
+
+> 추가적으로, ios는 back gesture이기 때문에 왼쪽 끝에 있는 위젯을 끌어 옮기다가 뒤로가기가 되는 경우도 있었다.
+> 그래서 navigation.reset()을 사용하기 보다, android의 back button과 ios의 back gesture를 못하게 하는게 더 좋다 생각했다.
+
+ios와 android는 뒤로가기를 막는 방법이 다르다.
+IN IOS
+
+```JS
+<Stack.Screen
+    name="PlaceWidgets"
+    component={PlaceWidgets}
+    options={() => ({
+    gestureEnabled: false,
+    })}
+/>
+```
+
+> IOS 에서는 navigation screen을 지정할 때 option값으로 gestureEnabled를 false로 하면 된다.
+
+IN android
+
+```JS
+BackHandler.addEventListener("hardwareBackPress", () => true);
+```
+
+> android 에서는 해당 컴포넌트(PlaceWidgets) 안에 해당 코드를 입력하면 된다. (import {BackHandler} from "react-native")
+
+추가적으로! navigation.navigate()로 이동 시 parameter를 옮기는 방법 말고, navigation.reset()으로 이동 시 parameter를 옮기는 방법이다.
+
+```JS
+navigation.reset({
+    routes: [
+    {
+        name: "PlaceWidgets",
+        params: {
+        name: selectedWidget.message,
+        widthSize: width,
+        heightSize: height,
+        theme: selectedWidget.theme,
+        icon: selectedWidget.icon,
+        },
+    },
+    ],
+});
+```

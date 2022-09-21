@@ -235,6 +235,20 @@ function MainScreen({ navigation }) {
                           onPress={() => {
                             setWidgetListVisible(!widgetListVisible);
                             setWidgetDetailVisible(!widgetDetailVisible);
+                            // navigation.reset({
+                            //   routes: [
+                            //     {
+                            //       name: "PlaceWidgets",
+                            //       params: {
+                            //         name: selectedWidget.message,
+                            //         widthSize: width,
+                            //         heightSize: height,
+                            //         theme: selectedWidget.theme,
+                            //         icon: selectedWidget.icon,
+                            //       },
+                            //     },
+                            //   ],
+                            // });
                             navigation.navigate("PlaceWidgets", {
                               name: selectedWidget.message,
                               widthSize: width,
@@ -282,7 +296,10 @@ function MainScreen({ navigation }) {
                 <TouchableOpacity
                   onPress={() => setWidgetDetailVisible(!widgetDetailVisible)}
                 >
-                  <Text style={{ fontSize: 28, color: "white" }}>❌</Text>
+                  <Ionicons
+                    name="return-down-back"
+                    style={{ fontSize: 52, color: "white" }}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
