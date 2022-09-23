@@ -3,7 +3,7 @@ export const widgetList = [
     {
       theme: "Ionicons",
       icon: "ios-sunny",
-      message: "날씨 위젯",
+      message: "날씨",
       widthSize: "20%",
       heightSize: "10%",
     },
@@ -67,7 +67,7 @@ export const widgetList = [
     {
       theme: "Ionicons",
       icon: "logo-youtube",
-      message: "유튜브 위젯",
+      message: "유튜브",
       widthSize: "20%",
       heightSize: "50%",
     },
@@ -83,14 +83,14 @@ export const widgetList = [
     {
       theme: "Feather",
       icon: "message-square",
-      message: "카카오톡 알림",
+      message: "카카오톡",
       widthSize: "20%",
       heightSize: "80%",
     },
     {
       theme: "Ionicons",
       icon: "logo-facebook",
-      message: "페이스북 알림",
+      message: "페이스북",
       widthSize: "20%",
       heightSize: "90%",
     },
@@ -99,7 +99,7 @@ export const widgetList = [
     {
       theme: "Ionicons",
       icon: "logo-instagram",
-      message: "인스타그램 알림",
+      message: "인스타그램",
       widthSize: "20%",
       heightSize: "100%",
     },

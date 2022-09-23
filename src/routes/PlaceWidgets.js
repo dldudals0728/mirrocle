@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -24,6 +24,49 @@ function PlaceWidgets({ navigation, route }) {
   BackHandler.addEventListener("hardwareBackPress", () => true);
   const gridSizeRef = useRef({ width: 0, height: 0 });
   const widgetSizeRef = useRef({ width: 0, height: 0 });
+  const widgetLocRef = useRef({ left: 0, top: 0, right: 0, bottom: 0 });
+  const [loading, setLoading] = useState(true);
+  const [widgetInfo, setWidgetInfo] = useState([]);
+  useEffect(() => {
+    const myWidgetInfo = [
+      {
+        module_name: "시계",
+        coordinate: {
+          x: 0,
+          y: 0,
+        },
+        size: {
+          width: 2,
+          height: 2,
+        },
+      },
+      {
+        module_name: "날씨",
+        coordinate: {
+          x: 4,
+          y: 0,
+        },
+        size: {
+          width: 1,
+          height: 1,
+        },
+      },
+      {
+        module_name: "교통정보",
+        coordinate: {
+          x: 1,
+          y: 4,
+        },
+        size: {
+          width: 2,
+          height: 3,
+        },
+      },
+    ];
+
+    setWidgetInfo(myWidgetInfo);
+    return () => setLoading((prev) => !prev);
+  }, []);
 
   const widgetRowCnt =
     parseInt(
@@ -59,6 +102,30 @@ function PlaceWidgets({ navigation, route }) {
     const layoutInfo = e.nativeEvent.layout;
     widgetSizeRef.current.width = layoutInfo.width;
     widgetSizeRef.current.height = layoutInfo.height;
+    setLoading((prev) => !prev);
+
+    /**
+     * @todo 왜 onPanResponderRelease보다 leftTopX, leftTopY가 1씩 더 크지 ?????
+     */
+    const gridX = widgetSizeRef.current.width / widgetRowCnt;
+    const gridY = widgetSizeRef.current.height / widgetColCnt;
+    const widgetCellWidth = Math.floor(gridX);
+    const widgetCellHeight = Math.floor(gridY);
+    const leftTopX = parseInt(Math.ceil(gridX) / widgetCellWidth) - 1;
+    const leftTopY = parseInt(Math.ceil(gridY) / widgetCellHeight) - 1;
+    const rightBottomX = leftTopX + (widgetRowCnt - 1);
+    const rightBottomY = leftTopY + (widgetColCnt - 1);
+
+    console.log("========== onLayout ==========");
+    console.log("leftTopX", leftTopX);
+    console.log("leftTopY", leftTopY);
+    console.log("rightBottomX", rightBottomX);
+    console.log("rightBottomY", rightBottomY);
+    console.log("========== onLayout ==========");
+    widgetLocRef.current.left = leftTopX;
+    widgetLocRef.current.top = leftTopY;
+    widgetLocRef.current.right = rightBottomX;
+    widgetLocRef.current.bottom = rightBottomY;
   };
 
   const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
@@ -168,10 +235,17 @@ function PlaceWidgets({ navigation, route }) {
           const leftTopY = parseInt(Math.ceil(moveY) / widgetCellHeight);
           const rightBottomX = leftTopX + (widgetRowCnt - 1);
           const rightBottomY = leftTopY + (widgetColCnt - 1);
+          console.log("========== move end ==========");
           console.log("leftTopX", leftTopX);
           console.log("leftTopY", leftTopY);
           console.log("rightBottomX", rightBottomX);
           console.log("rightBottomY", rightBottomY);
+          console.log("moveX:", moveX);
+          console.log("moveY:", moveY);
+          console.log("========== move end ==========");
+          /*
+          위의 로그로 알게된 것(best): 모든 위젯의 위치는 "좌측 상단" 기준이다 !!!!!!!!!!!!!!!!!!!!!!!!!!!
+          */
         });
       },
     })
@@ -212,6 +286,7 @@ function PlaceWidgets({ navigation, route }) {
     console.log("x:", coordinate.x);
     console.log("y:", coordinate.y);
     console.log("=========================");
+    console.log(widgetInfo);
   };
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
@@ -223,19 +298,35 @@ function PlaceWidgets({ navigation, route }) {
             ))}
           </View>
         ))}
+        {loading
+          ? null
+          : widgetInfo.map((widget, idx) => {
+              const rowPosition = widgetSizeRef.current.width / widgetRowCnt;
+              const columnPosition =
+                widgetSizeRef.current.height / widgetColCnt;
+              return (
+                <View
+                  key={idx}
+                  style={{
+                    ...styles.widgetStyle,
+                    top: columnPosition * widget.coordinate.y,
+                    left: rowPosition * widget.coordinate.x,
+                    width: `${widget.size.width * 20}%`,
+                    height: `${widget.size.height * 10}%`,
+                  }}
+                >
+                  <Text style={{ color: "white" }}>{widget.module_name}</Text>
+                </View>
+              );
+            })}
         <AnimatedBox
           style={{
-            position: "absolute",
-            width: route.params.widthSize,
-            height: route.params.heightSize,
+            ...styles.widgetStyle,
             top: 0,
             left: 0,
-            backgroundColor: "rgba(128, 128, 128, 0.3)",
-            borderRadius: 15,
-            borderWidth: 1,
+            width: route.params.widthSize,
+            height: route.params.heightSize,
             transform: [{ translateX: position.x }, { translateY: position.y }],
-            justifyContent: "center",
-            alignItems: "center",
           }}
           {...panResponder.panHandlers}
           onLayout={onLayoutwidget}
@@ -322,6 +413,15 @@ const styles = StyleSheet.create({
     borderWidth: 0.3,
     borderColor: "rgba(128, 128, 128, 0.3)",
     borderStyle: "solid",
+  },
+
+  widgetStyle: {
+    position: "absolute",
+    backgroundColor: "rgba(128, 128, 128, 0.3)",
+    borderRadius: 15,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
