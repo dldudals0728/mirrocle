@@ -8,6 +8,8 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TouchableWithoutFeedback,
+  Vibration,
   View,
 } from "react-native";
 import { theme } from "../../colors";
@@ -24,11 +26,17 @@ function PlaceWidgets({ navigation, route }) {
   BackHandler.addEventListener("hardwareBackPress", () => true);
   const gridSizeRef = useRef({ width: 0, height: 0 });
   const widgetSizeRef = useRef({ width: 0, height: 0 });
-  const widgetLocRef = useRef({ left: 0, top: 0, right: 0, bottom: 0 });
+  const widgetLocRef = useRef({ left: 0, top: 0, width: 0, height: 0 });
   const [loading, setLoading] = useState(true);
-  const [widgetInfo, setWidgetInfo] = useState([]);
+  const [DBLoading, setDBLoading] = useState(true);
+  const [widgetList, setWidgetList] = useState([]);
+  /**
+   * @todo PanResponder에서 widgetList를 이용하려 했으나, 비동기로 인해 state가 바뀌기 전에 panResponder에서 참조하여
+   *      값이 바뀌지 않은 상태로 저장됨. 이를 해결하기 위해 widgetListRef로 조작
+   */
+  const widgetListRef = useRef([]);
   useEffect(() => {
-    const myWidgetInfo = [
+    const myWidgetList = [
       {
         module_name: "시계",
         coordinate: {
@@ -41,7 +49,7 @@ function PlaceWidgets({ navigation, route }) {
         },
       },
       {
-        module_name: "날씨",
+        module_name: "뉴스",
         coordinate: {
           x: 4,
           y: 0,
@@ -52,9 +60,9 @@ function PlaceWidgets({ navigation, route }) {
         },
       },
       {
-        module_name: "교통정보",
+        module_name: "달력",
         coordinate: {
-          x: 1,
+          x: 3,
           y: 4,
         },
         size: {
@@ -64,7 +72,11 @@ function PlaceWidgets({ navigation, route }) {
       },
     ];
 
-    setWidgetInfo(myWidgetInfo);
+    setWidgetList((prev) => {
+      return myWidgetList;
+    });
+    setDBLoading((prev) => !prev);
+    widgetListRef.current = myWidgetList;
     return () => setLoading((prev) => !prev);
   }, []);
 
@@ -113,19 +125,17 @@ function PlaceWidgets({ navigation, route }) {
     const widgetCellHeight = Math.floor(gridY);
     const leftTopX = parseInt(Math.ceil(gridX) / widgetCellWidth) - 1;
     const leftTopY = parseInt(Math.ceil(gridY) / widgetCellHeight) - 1;
-    const rightBottomX = leftTopX + (widgetRowCnt - 1);
-    const rightBottomY = leftTopY + (widgetColCnt - 1);
 
     console.log("========== onLayout ==========");
     console.log("leftTopX", leftTopX);
     console.log("leftTopY", leftTopY);
-    console.log("rightBottomX", rightBottomX);
-    console.log("rightBottomY", rightBottomY);
+    console.log("width", widgetRowCnt);
+    console.log("height", widgetColCnt);
     console.log("========== onLayout ==========");
     widgetLocRef.current.left = leftTopX;
     widgetLocRef.current.top = leftTopY;
-    widgetLocRef.current.right = rightBottomX;
-    widgetLocRef.current.bottom = rightBottomY;
+    widgetLocRef.current.width = widgetRowCnt;
+    widgetLocRef.current.height = widgetColCnt;
   };
 
   const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
@@ -167,6 +177,7 @@ function PlaceWidgets({ navigation, route }) {
        * @todo grid 2~4열에서 "터치" 시 position.x._value의 값이 확 튀어버리는 현상 발생: stopAnimation()으로 해결
        */
       onPanResponderRelease: (event, gesture) => {
+        console.log(gesture);
         let currentPosition = 0;
         // 터치 시 튀는 문제를 해결하니, 터치를 해제할 때 튀는 문제 발생 ==> 해결(원인: flattenOffset())
         if (gesture.dx === 0 && gesture.dy === 0) {
@@ -185,6 +196,10 @@ function PlaceWidgets({ navigation, route }) {
         const widgetCellHeight = Math.floor(gridY);
         // const setting = [false, false];
         while (true) {
+          /**
+           * @param currentPosition grid의 위치를 계산. 4X4까지는 더 큰 거리만큼 움직이지만, Y축으로 4 이상 움직일 경우 그 이상으로 넘어감
+           */
+          console.log(currentPosition);
           if (currentX <= gridStartWidth) {
             moveX = gridStartWidth;
           } else if (currentX >= gridEndWidth) {
@@ -227,6 +242,36 @@ function PlaceWidgets({ navigation, route }) {
             break;
           }
         }
+        console.log(widgetList);
+        console.log(widgetListRef.current);
+        widgetListRef.current.map((widget, idx) => {
+          const loadedWidget = {
+            width: widget.size.width,
+            height: widget.size.height,
+            // left top x, y
+            x: widget.coordinate.x,
+            y: widget.coordinate.y,
+          };
+
+          const currentWidget = {
+            width: widgetRowCnt,
+            height: widgetColCnt,
+            // left top x, y
+            x: parseInt(Math.ceil(moveX) / widgetCellWidth),
+            y: parseInt(Math.ceil(moveY) / widgetCellHeight),
+          };
+
+          if (
+            loadedWidget.x >= currentWidget.x + currentWidget.width ||
+            loadedWidget.x + loadedWidget.width <= currentWidget.x ||
+            loadedWidget.y >= currentWidget.y + currentWidget.height ||
+            loadedWidget.y + loadedWidget.height <= currentWidget.y
+          ) {
+            console.log(`${widget.module_name} 위젯과 겹치지 않습니다.`);
+          } else {
+            console.log(`${widget.module_name} 위젯과 겹칩니다.`);
+          }
+        });
         Animated.spring(position, {
           toValue: { x: moveX, y: moveY },
           useNativeDriver: false,
@@ -263,7 +308,7 @@ function PlaceWidgets({ navigation, route }) {
     [".", ".", ".", ".", "."],
   ];
 
-  const saveWidgetInfo = () => {
+  const savewidgetList = () => {
     const widgetCellWidth = Math.floor(
       widgetSizeRef.current.width / widgetRowCnt
     );
@@ -286,7 +331,61 @@ function PlaceWidgets({ navigation, route }) {
     console.log("x:", coordinate.x);
     console.log("y:", coordinate.y);
     console.log("=========================");
-    console.log(widgetInfo);
+    console.log(widgetList);
+    let isStack = false;
+    widgetList.map((widget, idx) => {
+      const loadedWidget = {
+        width: widget.size.width,
+        height: widget.size.height,
+        // left top x, y
+        x: widget.coordinate.x,
+        y: widget.coordinate.y,
+      };
+
+      const currentWidget = {
+        width: widgetRowCnt,
+        height: widgetColCnt,
+        // left top x, y
+        x: coordinate.x,
+        y: coordinate.y,
+      };
+
+      if (
+        loadedWidget.x >= currentWidget.x + currentWidget.width ||
+        loadedWidget.x + loadedWidget.width <= currentWidget.x ||
+        loadedWidget.y >= currentWidget.y + currentWidget.height ||
+        loadedWidget.y + loadedWidget.height <= currentWidget.y
+      ) {
+        console.log(`${widget.module_name} 위젯과 겹치지 않습니다.`);
+      } else {
+        console.log(`${widget.module_name} 위젯과 겹칩니다.`);
+        isStack = true;
+      }
+    });
+    if (isStack) {
+      Alert.alert("위치 오류", "위젯은 서로 겹칠 수 없습니다!", [
+        {
+          text: "OK",
+        },
+      ]);
+    } else {
+      Alert.alert("위젯 정보 저장", "위젯 정보를 저장하시겠습니까?", [
+        {
+          text: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => {
+            Alert.alert("완료", "위젯이 성공적으로 배치되었습니다.", [
+              {
+                text: "OK",
+              },
+            ]);
+            // navigation.navigate("MainScreen");
+          },
+        },
+      ]);
+    }
   };
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
@@ -300,44 +399,55 @@ function PlaceWidgets({ navigation, route }) {
         ))}
         {loading
           ? null
-          : widgetInfo.map((widget, idx) => {
+          : widgetList.map((widget, idx) => {
               const rowPosition = widgetSizeRef.current.width / widgetRowCnt;
               const columnPosition =
                 widgetSizeRef.current.height / widgetColCnt;
               return (
-                <View
+                <TouchableWithoutFeedback
                   key={idx}
-                  style={{
-                    ...styles.widgetStyle,
-                    top: columnPosition * widget.coordinate.y,
-                    left: rowPosition * widget.coordinate.x,
-                    width: `${widget.size.width * 20}%`,
-                    height: `${widget.size.height * 10}%`,
+                  onLongPress={() => {
+                    Vibration.vibrate();
                   }}
                 >
-                  <Text style={{ color: "white" }}>{widget.module_name}</Text>
-                </View>
+                  <View
+                    style={{
+                      ...styles.widgetStyle,
+                      top: columnPosition * widget.coordinate.y,
+                      left: rowPosition * widget.coordinate.x,
+                      width: `${widget.size.width * 20}%`,
+                      height: `${widget.size.height * 10}%`,
+                    }}
+                  >
+                    <Text style={{ color: "white" }}>{widget.module_name}</Text>
+                  </View>
+                </TouchableWithoutFeedback>
               );
             })}
-        <AnimatedBox
-          style={{
-            ...styles.widgetStyle,
-            top: 0,
-            left: 0,
-            width: route.params.widthSize,
-            height: route.params.heightSize,
-            transform: [{ translateX: position.x }, { translateY: position.y }],
-          }}
-          {...panResponder.panHandlers}
-          onLayout={onLayoutwidget}
-        >
-          <Text style={{ color: "white" }}>{route.params.name}</Text>
-          {route.params.theme == "Ionicons" ? (
-            <Ionicons name={route.params.icon} size={36} color="white" />
-          ) : (
-            <Feather name={route.params.icon} size={36} color="white" />
-          )}
-        </AnimatedBox>
+        {DBLoading ? null : (
+          <AnimatedBox
+            style={{
+              ...styles.widgetStyle,
+              top: 0,
+              left: 0,
+              width: route.params.widthSize,
+              height: route.params.heightSize,
+              transform: [
+                { translateX: position.x },
+                { translateY: position.y },
+              ],
+            }}
+            {...panResponder.panHandlers}
+            onLayout={onLayoutwidget}
+          >
+            <Text style={{ color: "white" }}>{route.params.name}</Text>
+            {route.params.theme == "Ionicons" ? (
+              <Ionicons name={route.params.icon} size={36} color="white" />
+            ) : (
+              <Feather name={route.params.icon} size={36} color="white" />
+            )}
+          </AnimatedBox>
+        )}
       </View>
       <View
         style={{
@@ -359,7 +469,7 @@ function PlaceWidgets({ navigation, route }) {
           textStyle={{
             color: "white",
           }}
-          onPress={saveWidgetInfo}
+          onPress={savewidgetList}
         />
         <MyButton
           text="돌아가기"
@@ -373,19 +483,23 @@ function PlaceWidgets({ navigation, route }) {
             color: "white",
           }}
           onPress={() => {
-            Alert.alert("돌아가기", "위젯 배치를 취소하시겠습니까?", [
-              {
-                text: "cancel",
-              },
-              {
-                text: "OK",
-                onPress: () => {
-                  // reset으로 하니까 화면이 오른쪽에서 나와서 뒤로가기의 느낌이 안산다...
-                  // navigation.reset({ routes: [{ name: "MainScreen" }] });
-                  navigation.navigate("MainScreen");
+            Alert.alert(
+              "돌아가기",
+              "위젯 배치를 취소하고\n 메인 화면으로 돌아가시겠습니까?",
+              [
+                {
+                  text: "cancel",
                 },
-              },
-            ]);
+                {
+                  text: "OK",
+                  onPress: () => {
+                    // reset으로 하니까 화면이 오른쪽에서 나와서 뒤로가기의 느낌이 안산다...
+                    // navigation.reset({ routes: [{ name: "MainScreen" }] });
+                    navigation.navigate("MainScreen");
+                  },
+                },
+              ]
+            );
           }}
         />
       </View>
