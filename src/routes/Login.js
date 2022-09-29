@@ -8,12 +8,14 @@ import {
   Keyboard,
   Alert,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { theme } from "../../colors";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 import { MyTextInput } from "../components/MyTextInput";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -24,7 +26,17 @@ function Login({ navigation }) {
     setUserId("");
     setUserPwd("");
   };
-  const login = () => {
+  async function loginWithServer() {
+    console.log("login function");
+    let url = "http://" + IP_ADDRESS + ":8080/mirrocle/login";
+    url += `?accountID=${userId}&accountPwd=${userPwd}`;
+    const res = await fetch(url).catch((error) => console.log(error));
+    const loginCode = await res.json();
+    console.log("login code in function:", loginCode);
+    return loginCode;
+  }
+  const login = async () => {
+    console.log("login");
     // 사용자 인증 : User Authentication
     if (userId === "" || userPwd === "") {
       Alert.alert(
@@ -36,23 +48,32 @@ function Login({ navigation }) {
           },
         ]
       );
-    } else if (userId === "root" && userPwd === "1234") {
-      /**
-       * @todo 계정이 DB에 있다 ? (계정과 연결된 Mirrocle이 있다 ? UserList : ConnectMirrocle) : 아이디 혹은 비밀번호 오류
-       */
-      navigation.reset({ routes: [{ name: "UserList" }] });
-      clearAll();
     } else {
-      Alert.alert("로그인 실패", "아이디 혹은 비밀번호 오류입니다.", [
-        {
-          text: "OK",
-        },
-      ]);
+      /**
+       * @todo 계속 Promise로 반환하는데...
+       */
+      console.log("else");
+      const loginCode = await loginWithServer();
+      console.log(loginCode);
+      console.log("end");
+      if (loginCode === 200) {
+        navigation.reset({ routes: [{ name: "UserList" }] });
+        clearAll();
+      } else {
+        Alert.alert("로그인 실패", "아이디 혹은 비밀번호 오류입니다.", [
+          {
+            text: "OK",
+          },
+        ]);
+      }
     }
   };
   const signIn = () => {
     navigation.navigate("SignIn");
     clearAll();
+  };
+  const findAccount = (mode) => {
+    navigation.navigate("FindAccount", { mode });
   };
   const loginWithGoogle = () => {
     /**
@@ -107,7 +128,7 @@ function Login({ navigation }) {
         <View style={styles.loginBtnContainer}>
           <MyButton text="로그인" onPress={login} />
           <MyButton text="회원가입" onPress={signIn} />
-          <View style={styles.socialLogin}>
+          {/* <View style={styles.socialLogin}>
             <View style={styles.social__col}>
               <TouchableWithoutFeedback onPress={loginWithGoogle}>
                 <View
@@ -181,6 +202,34 @@ function Login({ navigation }) {
                 </View>
               </TouchableWithoutFeedback>
             </View>
+          </View> */}
+          <View
+            style={{
+              marginTop: 20,
+              flexDirection: "row",
+              justifyContent: "space-around",
+            }}
+          >
+            <TouchableOpacity onPress={() => findAccount("ID")}>
+              <Text
+                style={{
+                  color: theme.IOS__grey,
+                  textDecorationLine: "underline",
+                }}
+              >
+                아이디 찾기
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => findAccount("Password")}>
+              <Text
+                style={{
+                  color: theme.IOS__grey,
+                  textDecorationLine: "underline",
+                }}
+              >
+                비밀번호 찾기
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
         <StatusBar style="auto" />

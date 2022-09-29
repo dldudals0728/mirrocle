@@ -485,3 +485,52 @@ navigation.reset({
     ],
 });
 ```
+
+# Back-End
+
+## React Native & spring boot 연동 basic
+
+```JS
+useEffect(() => {
+    let url = "/test";
+    // Get 비동기 쿼리스트링 전송
+    fetch(url)
+        .then((response) => {
+            // response.text() 뿐만 아니라 response.json()도 가능: typeof: string / object
+            response.text().then(function (result) {
+                console.log(result);
+            });
+        /* 주의사항
+        fetch의 then 안에서 response.json() 또는 response.text()로 데이터를 받았을 경우
+        한번 더 위 기능을 사용하면 에러가 발생한다.
+        response.json() 이후에는 무조건 then 또는 catch가 발생하는 조건으로 형성되어 있다.
+        */
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+}, []);
+```
+
+```JAVA
+@RestController
+@RequestMapping("/req")
+public class DefaultReqController {
+
+    // string 보내기
+    @GetMapping("/test")
+    public String posttest() {
+        return "return msg";
+    }
+
+    // json 형식으로 보내기(front-end 에서 string으로 받을 수 있음.)
+    @GetMapping("/json")
+    @ResponseBody
+    public ResponseEntity<Object> html(Model m) {
+        m.addAttribute("model", "모델값 json");
+        return new ResponseEntity<>(m, HttpStatus.OK);
+    }
+}
+```
+
+[출처](https://d-life93.tistory.com/349)

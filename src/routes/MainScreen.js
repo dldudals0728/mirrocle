@@ -20,6 +20,7 @@ import { widgetList, widgetSizeList } from "../../Widgets";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 10;
@@ -31,57 +32,29 @@ function MainScreen({ navigation, route }) {
   const [widgetListVisible, setWidgetListVisible] = useState(false);
   const [widgetDetailVisible, setWidgetDetailVisible] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState({});
-  const [loading, setLoading] = useState(false);
-  //const [widgetInfor, setWidgetInform] = useState({});
-  const [widgetInfo, setWidgetInfo] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadedWidget, setLoadedWidget] = useState([]);
+  const loadWidgetFromDB = () => {
+    let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
+    fetch(url)
+      .then((response) => {
+        response.json().then((result) => {
+          setLoadedWidget((prev) => {
+            return result;
+          });
 
-  // const getWidgetInform = async () => {
-  //   await AsyncStorage.getItem("widgetInfo", (err, result) => {
-  //     let user = JSON.parse(result);
-  //     setWidgetInform(user.widgetInfo);
-  //     console.log(widgetInfor[0].module_name);
-  //   });
-  // };
+          console.log(result);
+          console.log(typeof result);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   useEffect(() => {
-    //이 부분은 서버로부터 JSON받아와서 해야할듯
-    const myWidgetInfo = [
-      {
-        module_name: "시계",
-        coordinate: {
-          x: 0,
-          y: 0,
-        },
-        size: {
-          width: 2,
-          height: 2,
-        },
-      },
-      {
-        module_name: "날씨",
-        coordinate: {
-          x: 4,
-          y: 0,
-        },
-        size: {
-          width: 1,
-          height: 1,
-        },
-      },
-      {
-        module_name: "교통정보",
-        coordinate: {
-          x: 1,
-          y: 4,
-        },
-        size: {
-          width: 2,
-          height: 3,
-        },
-      },
-    ];
-
-    setWidgetInfo(myWidgetInfo);
+    loadWidgetFromDB();
+    setLoading((prev) => !prev);
     return () => setLoading((prev) => !prev);
   }, []);
 
@@ -318,13 +291,13 @@ function MainScreen({ navigation, route }) {
                           )}
                         </TouchableOpacity>
                         <Text style={{ color: "white", fontSize: 28 }}>
-                          {width.length === 3
-                            ? parseInt(width.slice(0, 2)) / 2
-                            : parseInt(width.slice(0, 3)) / 2}{" "}
+                          {(width.length === 3
+                            ? parseInt(width.slice(0, 2))
+                            : parseInt(width.slice(0, 3))) / 20}{" "}
                           x{" "}
-                          {height.length === 3
+                          {(height.length === 3
                             ? height.slice(0, 2)
-                            : height.slice(0, 3)}
+                            : height.slice(0, 3)) / 10}
                         </Text>
                       </View>
                     ))
@@ -472,22 +445,24 @@ function MainScreen({ navigation, route }) {
             ))}
           </View>
         ))}
-        {widgetInfo.map((widget, idx) => {
-          return (
-            <View
-              key={idx}
-              style={{
-                ...styles.widgetStyle,
-                top: `${widget.coordinate.y * 10}%`,
-                left: `${widget.coordinate.x * 20}%`,
-                width: `${widget.size.width * 20}%`,
-                height: `${widget.size.height * 10}%`,
-              }}
-            >
-              <Text style={{ color: "white" }}>{widget.module_name}</Text>
-            </View>
-          );
-        })}
+        {loading
+          ? null
+          : loadedWidget.map((widget, idx) => {
+              return (
+                <View
+                  key={idx}
+                  style={{
+                    ...styles.widgetStyle,
+                    top: `${widget.coordinate.y * 10}%`,
+                    left: `${widget.coordinate.x * 20}%`,
+                    width: `${widget.size.width * 20}%`,
+                    height: `${widget.size.height * 10}%`,
+                  }}
+                >
+                  <Text style={{ color: "white" }}>{widget.module_name}</Text>
+                </View>
+              );
+            })}
       </View>
       <MyButton
         text="위젯 편집"
@@ -584,6 +559,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     borderColor: theme.grey,
+    borderRadius: 15,
   },
   gridStyle: {
     flexDirection: "row",

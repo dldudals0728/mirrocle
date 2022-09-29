@@ -16,6 +16,7 @@ import { theme } from "../../colors";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 
 const AnimatedBox = Animated.createAnimatedComponent(View);
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -35,48 +36,30 @@ function PlaceWidgets({ navigation, route }) {
    *      값이 바뀌지 않은 상태로 저장됨. 이를 해결하기 위해 widgetListRef로 조작
    */
   const widgetListRef = useRef([]);
-  useEffect(() => {
-    const myWidgetList = [
-      {
-        module_name: "시계",
-        coordinate: {
-          x: 0,
-          y: 0,
-        },
-        size: {
-          width: 2,
-          height: 2,
-        },
-      },
-      {
-        module_name: "뉴스",
-        coordinate: {
-          x: 4,
-          y: 0,
-        },
-        size: {
-          width: 1,
-          height: 1,
-        },
-      },
-      {
-        module_name: "달력",
-        coordinate: {
-          x: 3,
-          y: 4,
-        },
-        size: {
-          width: 2,
-          height: 3,
-        },
-      },
-    ];
 
-    setWidgetList((prev) => {
-      return myWidgetList;
-    });
+  const loadWidgetFromDB = () => {
+    let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
+    fetch(url)
+      .then((response) => {
+        response.json().then((result) => {
+          setWidgetList((prev) => {
+            return result;
+          });
+
+          console.log(result);
+          console.log(typeof result);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    loadWidgetFromDB();
+
     setDBLoading((prev) => !prev);
-    widgetListRef.current = myWidgetList;
+    console.log(widgetLocRef);
     return () => setLoading((prev) => !prev);
   }, []);
 
@@ -260,6 +243,18 @@ function PlaceWidgets({ navigation, route }) {
             x: parseInt(Math.ceil(moveX) / widgetCellWidth),
             y: parseInt(Math.ceil(moveY) / widgetCellHeight),
           };
+
+          console.log("=============== start ================");
+          console.log("loadedWidget.x:", loadedWidget.x);
+          console.log("currentWidget.x:", currentWidget.x);
+          console.log("loadedWidget.y:", loadedWidget.y);
+          console.log("currentWidget.y:", currentWidget.y);
+          console.log("===============================");
+          console.log("loadedWidget.width:", loadedWidget.width);
+          console.log("currentWidget.width:", currentWidget.width);
+          console.log("loadedWidget.height:", loadedWidget.height);
+          console.log("currentWidget.height:", currentWidget.height);
+          console.log("=============== end ================");
 
           if (
             loadedWidget.x >= currentWidget.x + currentWidget.width ||

@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { useEffect } from "react";
 import { Logo } from "../components/Logo";
+import { theme } from "../../colors";
 
 function Loading({ navigation }) {
   const goToLogin = () => {
@@ -28,7 +29,7 @@ function Loading({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#2AC1BC",
+    backgroundColor: theme.baeminBg,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,

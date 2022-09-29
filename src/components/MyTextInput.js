@@ -9,6 +9,7 @@ function MyTextInput({
   value,
   onChangeText,
   onSubmitEditing,
+  keyboardType,
 }) {
   return (
     <TextInput
@@ -20,6 +21,7 @@ function MyTextInput({
       value={value}
       onChangeText={onChangeText}
       onSubmitEditing={onSubmitEditing}
+      keyboardType={keyboardType}
     />
   );
 }
