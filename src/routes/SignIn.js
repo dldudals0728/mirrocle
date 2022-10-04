@@ -17,6 +17,7 @@ function SignIn({ navigation }) {
   const [userEmail, setUserEmail] = useState("");
   const [userPwd, setUserPwd] = useState("");
   const [checkPwd, setCheckPwd] = useState("");
+  const [name, setName] = useState("");
   const [isDuplicate, setIsDuplicate] = useState(true);
   const [checkDuplicate, setCheckDuplicate] = useState(false);
   const clearAll = () => {
@@ -65,6 +66,12 @@ function SignIn({ navigation }) {
       ]);
     } else if (!userEmail.includes("@") || !userEmail.includes(".")) {
       Alert.alert("메일 입력 오류", "메일 형식이 올바르지 않습니다.", [
+        {
+          text: "OK",
+        },
+      ]);
+    } else if (name === "") {
+      Alert.alert("이름 입력", "이름을 입력해주세요.", [
         {
           text: "OK",
         },
@@ -154,6 +161,13 @@ function SignIn({ navigation }) {
             onChangeText={setCheckPwd}
             secureTextEntry={true}
             placeholder="비밀번호 확인(재입력)"
+            returnKeyType="done"
+            onSubmitEditing={signIn}
+          />
+          <MyTextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="이름"
             returnKeyType="done"
             onSubmitEditing={signIn}
           />

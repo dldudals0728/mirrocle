@@ -30,7 +30,18 @@ function Login({ navigation }) {
     console.log("login function");
     let url = "http://" + IP_ADDRESS + ":8080/mirrocle/login";
     url += `?accountID=${userId}&accountPwd=${userPwd}`;
+    // url += `?id=${userId}&pw=${userPwd}`;
     const res = await fetch(url).catch((error) => console.log(error));
+    // const res = await fetch(url, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     id: userId,
+    //     pw: userPwd,
+    //   }),
+    // });
     const loginCode = await res.json();
     console.log("login code in function:", loginCode);
     return loginCode;

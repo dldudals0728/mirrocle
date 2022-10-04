@@ -4,7 +4,9 @@ import {
   Animated,
   BackHandler,
   Dimensions,
+  Modal,
   PanResponder,
+  Pressable,
   StatusBar,
   StyleSheet,
   Text,
@@ -25,11 +27,12 @@ const GRID_MARGIN_BOTTOM = 120;
 
 function PlaceWidgets({ navigation, route }) {
   BackHandler.addEventListener("hardwareBackPress", () => true);
+  const isEdit = route.params.edit === true ? true : false;
   const gridSizeRef = useRef({ width: 0, height: 0 });
   const widgetSizeRef = useRef({ width: 0, height: 0 });
   const widgetLocRef = useRef({ left: 0, top: 0, width: 0, height: 0 });
   const [loading, setLoading] = useState(true);
-  const [DBLoading, setDBLoading] = useState(true);
+  const [DBLoading, setDBLoading] = useState(false);
   const [widgetList, setWidgetList] = useState([]);
   /**
    * @todo PanResponder에서 widgetList를 이용하려 했으나, 비동기로 인해 state가 바뀌기 전에 panResponder에서 참조하여
@@ -38,21 +41,42 @@ function PlaceWidgets({ navigation, route }) {
   const widgetListRef = useRef([]);
 
   const loadWidgetFromDB = () => {
-    let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
-    fetch(url)
-      .then((response) => {
-        response.json().then((result) => {
-          setWidgetList((prev) => {
-            return result;
-          });
+    // let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
+    // fetch(url)
+    //   .then((response) => {
+    //     response.json().then((result) => {
+    //       setWidgetList((prev) => {
+    //         return result;
+    //       });
 
-          console.log(result);
-          console.log(typeof result);
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    //       console.log(result);
+    //       console.log(typeof result);
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+    const tempWidget = [
+      {
+        coordinate: { x: 0, y: 0 },
+        module_name: "시계",
+        size: { height: 2, width: 2 },
+      },
+      {
+        coordinate: { x: 4, y: 0 },
+        module_name: "날씨",
+        size: { height: 1, width: 1 },
+      },
+      {
+        coordinate: { x: 3, y: 4 },
+        module_name: "교통정보",
+        size: { height: 3, width: 2 },
+      },
+    ];
+    resWidget = tempWidget.filter((widget) => {
+      return widget.module_name !== route.params.module_name;
+    });
+    setWidgetList(tempWidget);
   };
 
   useEffect(() => {
@@ -63,17 +87,8 @@ function PlaceWidgets({ navigation, route }) {
     return () => setLoading((prev) => !prev);
   }, []);
 
-  const widgetRowCnt =
-    parseInt(
-      route.params.widthSize.length === 3
-        ? route.params.widthSize[0]
-        : route.params.widthSize.slice(0, 2)
-    ) / 2;
-  const widgetColCnt = parseInt(
-    route.params.heightSize.length === 3
-      ? route.params.heightSize[0]
-      : route.params.heightSize.slice(0, 2)
-  );
+  const widgetRowCnt = route.params.size.width;
+  const widgetColCnt = route.params.size.height;
 
   const gridWidth = Math.round(SCREEN_WIDTH / 5);
   const gridHeight = Math.round(
@@ -92,13 +107,15 @@ function PlaceWidgets({ navigation, route }) {
     const layoutInfo = e.nativeEvent.layout;
     gridSizeRef.current.width = layoutInfo.width;
     gridSizeRef.current.height = layoutInfo.height;
-  };
-  const onLayoutwidget = (e) => {
-    const layoutInfo = e.nativeEvent.layout;
-    widgetSizeRef.current.width = layoutInfo.width;
-    widgetSizeRef.current.height = layoutInfo.height;
-    setLoading((prev) => !prev);
 
+    widgetSizeRef.current.width =
+      (layoutInfo.width / 5) * route.params.size.width;
+    widgetSizeRef.current.height =
+      (layoutInfo.height / 10) * route.params.size.height;
+
+    setLoading((prev) => !prev);
+  };
+  const onLayoutwidget = () => {
     /**
      * @todo 왜 onPanResponderRelease보다 leftTopX, leftTopY가 1씩 더 크지 ?????
      */
@@ -161,6 +178,8 @@ function PlaceWidgets({ navigation, route }) {
        */
       onPanResponderRelease: (event, gesture) => {
         console.log(gesture);
+        console.log("*** gridEndWidth:", gridEndWidth);
+        console.log("*** gridEndHeight:", gridEndHeight);
         let currentPosition = 0;
         // 터치 시 튀는 문제를 해결하니, 터치를 해제할 때 튀는 문제 발생 ==> 해결(원인: flattenOffset())
         if (gesture.dx === 0 && gesture.dy === 0) {
@@ -175,6 +194,8 @@ function PlaceWidgets({ navigation, route }) {
         // 각 위젯의 크기별로 positioning
         const gridX = widgetSizeRef.current.width / widgetRowCnt;
         const gridY = widgetSizeRef.current.height / widgetColCnt;
+        console.log("*** gridX:", gridX);
+        console.log("*** gridY:", gridY);
         const widgetCellWidth = Math.floor(gridX);
         const widgetCellHeight = Math.floor(gridY);
         // const setting = [false, false];
@@ -182,7 +203,6 @@ function PlaceWidgets({ navigation, route }) {
           /**
            * @param currentPosition grid의 위치를 계산. 4X4까지는 더 큰 거리만큼 움직이지만, Y축으로 4 이상 움직일 경우 그 이상으로 넘어감
            */
-          console.log(currentPosition);
           if (currentX <= gridStartWidth) {
             moveX = gridStartWidth;
           } else if (currentX >= gridEndWidth) {
@@ -225,8 +245,6 @@ function PlaceWidgets({ navigation, route }) {
             break;
           }
         }
-        console.log(widgetList);
-        console.log(widgetListRef.current);
         widgetListRef.current.map((widget, idx) => {
           const loadedWidget = {
             width: widget.size.width,
@@ -376,7 +394,7 @@ function PlaceWidgets({ navigation, route }) {
                 text: "OK",
               },
             ]);
-            // navigation.navigate("MainScreen");
+            navigation.pop();
           },
         },
       ]);
@@ -395,38 +413,29 @@ function PlaceWidgets({ navigation, route }) {
         {loading
           ? null
           : widgetList.map((widget, idx) => {
-              const rowPosition = widgetSizeRef.current.width / widgetRowCnt;
-              const columnPosition =
-                widgetSizeRef.current.height / widgetColCnt;
               return (
-                <TouchableWithoutFeedback
+                <View
                   key={idx}
-                  onLongPress={() => {
-                    Vibration.vibrate();
+                  style={{
+                    ...styles.widgetStyle,
+                    top: `${widget.coordinate.y * 10}%`,
+                    left: `${widget.coordinate.x * 20}%`,
+                    width: `${widget.size.width * 20}%`,
+                    height: `${widget.size.height * 10}%`,
                   }}
                 >
-                  <View
-                    style={{
-                      ...styles.widgetStyle,
-                      top: columnPosition * widget.coordinate.y,
-                      left: rowPosition * widget.coordinate.x,
-                      width: `${widget.size.width * 20}%`,
-                      height: `${widget.size.height * 10}%`,
-                    }}
-                  >
-                    <Text style={{ color: "white" }}>{widget.module_name}</Text>
-                  </View>
-                </TouchableWithoutFeedback>
+                  <Text style={{ color: "white" }}>{widget.module_name}</Text>
+                </View>
               );
             })}
-        {DBLoading ? null : (
+        {DBLoading ? (
           <AnimatedBox
             style={{
               ...styles.widgetStyle,
-              top: 0,
-              left: 0,
-              width: route.params.widthSize,
-              height: route.params.heightSize,
+              left: `${route.params.coordinate.x * 20}%`,
+              top: `${route.params.coordinate.y * 10}%`,
+              width: `${route.params.size.width * 20}%`,
+              height: `${route.params.size.height * 10}%`,
               transform: [
                 { translateX: position.x },
                 { translateY: position.y },
@@ -435,14 +444,14 @@ function PlaceWidgets({ navigation, route }) {
             {...panResponder.panHandlers}
             onLayout={onLayoutwidget}
           >
-            <Text style={{ color: "white" }}>{route.params.name}</Text>
-            {route.params.theme == "Ionicons" ? (
+            <Text style={{ color: "white" }}>{route.params.module_name}</Text>
+            {route.params.theme == "Ionicons" && !isEdit ? (
               <Ionicons name={route.params.icon} size={36} color="white" />
             ) : (
               <Feather name={route.params.icon} size={36} color="white" />
             )}
           </AnimatedBox>
-        )}
+        ) : null}
       </View>
       <View
         style={{
@@ -488,9 +497,7 @@ function PlaceWidgets({ navigation, route }) {
                 {
                   text: "OK",
                   onPress: () => {
-                    // reset으로 하니까 화면이 오른쪽에서 나와서 뒤로가기의 느낌이 안산다...
-                    // navigation.reset({ routes: [{ name: "MainScreen" }] });
-                    navigation.navigate("MainScreen");
+                    navigation.pop();
                   },
                 },
               ]

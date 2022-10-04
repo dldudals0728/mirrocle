@@ -486,6 +486,52 @@ navigation.reset({
 });
 ```
 
+## React Native에서 absolute를 가운데 정렬 하는 방법(잡기술)
+
+워낙에 가운데 정렬이라 하면 justifyContent와 alignItems를 center로 하면 된다. 하지만 다음과 같은 경우는 불가능하다.<br>
+Modal 바깥쪽 터치시 Modal이 사라지도록 제어하기 위해 최상위에 Pressable 컴포넌트를 추가한 경우이다.
+
+```JS
+<Modal
+    visible={previewVisible}
+    animationType="fade"
+    transparent={true}
+    onRequestClose={() =>
+    OS === "android" ? setPreviewVisible(!previewVisible) : null
+    }
+>
+    <Pressable
+        style={{
+        flex: 1,
+        backgroundColor: "rgba(128, 128, 128, 0.8)",
+        }}
+        onPress={() => setPreviewVisible(!previewVisible)}
+    />
+    <View className="this"></View>
+```
+
+위와 같이 하면, this의 바깥쪽을 터치하면 setPreViewVisible이 실행되어 바깥쪽 터치로 모달 창을 사라지게 할 수 있다.<br>
+그렇게 하기 위해선 this의 position을 absolute로 해야 하는데, 이를 justify나 align으로 행, 열 모두 중앙정렬 시킬 수 없다.
+
+> 이럴 때, 다음과 같은 방법으로 처리했다!
+
+내가 사용한 방법은 잡기술이지만, absolute의 width와 height, top과 left를 적절히 사용하였다.
+
+```JS
+this: {
+    flex: 1,
+    position: "absolute",
+    // absolute 자체적으로 가운데 정렬하기 꿀팁!
+    top: "8%",
+    left: "1%",
+    width: "98%",
+    height: "84%",
+}
+```
+
+이렇게 top _ 2 + height = 100(%), left _ 2 + width = 100(%)가 되도록 하면 absolute 자체의 컴포넌트를 가지고 중앙정렬 할 수 있다!<br>
+이 방법을 알아냈을때는 정말 대박이었다 ^^
+
 # Back-End
 
 ## React Native & spring boot 연동 basic

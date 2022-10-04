@@ -29,13 +29,13 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* <Stack.Screen name="Loading" component={Loading} /> */}
-        <Stack.Screen name="Login" component={Login} />
+        {/* <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="FindAccount" component={FindAccount} />
         <Stack.Screen name="Connection" component={ConnectMirrocle} />
         <Stack.Screen name="SignIn" component={SignIn} />
         <Stack.Screen name="UserList" component={UserList} />
         <Stack.Screen name="MirrocleSettings" component={MirrocleSettings} />
-        <Stack.Screen name="AddUser" component={AddUser} />
+        <Stack.Screen name="AddUser" component={AddUser} /> */}
         <Stack.Screen name="MainScreen" component={MainScreen} />
         <Stack.Screen
           name="PlaceWidgets"

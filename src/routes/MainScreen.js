@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 //import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -34,22 +35,50 @@ function MainScreen({ navigation, route }) {
   const [selectedWidget, setSelectedWidget] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadedWidget, setLoadedWidget] = useState([]);
-  const loadWidgetFromDB = () => {
-    let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
-    fetch(url)
-      .then((response) => {
-        response.json().then((result) => {
-          setLoadedWidget((prev) => {
-            return result;
-          });
+  const [previewVisible, setPreviewVisible] = useState(false);
 
-          console.log(result);
-          console.log(typeof result);
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  const [settingVisible, setSettingVisible] = useState(false);
+  const editWidget = useRef({});
+
+  const selectWidgetSetting = (widget) => {
+    editWidget.current = widget;
+    console.log(editWidget.current);
+  };
+
+  const loadWidgetFromDB = () => {
+    // let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
+    // fetch(url)
+    //   .then((response) => {
+    //     response.json().then((result) => {
+    //       setLoadedWidget((prev) => {
+    //         return result;
+    //       });
+
+    //       console.log(result);
+    //       console.log(typeof result);
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
+    const tempWidget = [
+      {
+        coordinate: { x: 0, y: 0 },
+        module_name: "시계",
+        size: { height: 2, width: 2 },
+      },
+      {
+        coordinate: { x: 4, y: 0 },
+        module_name: "날씨",
+        size: { height: 1, width: 1 },
+      },
+      {
+        coordinate: { x: 3, y: 4 },
+        module_name: "교통정보",
+        size: { height: 3, width: 2 },
+      },
+    ];
+    setLoadedWidget(tempWidget);
   };
 
   useEffect(() => {
@@ -268,9 +297,15 @@ function MainScreen({ navigation, route }) {
                             setWidgetListVisible(!widgetListVisible);
                             setWidgetDetailVisible(!widgetDetailVisible);
                             navigation.navigate("PlaceWidgets", {
-                              name: selectedWidget.message,
-                              widthSize: width,
-                              heightSize: height,
+                              module_name: selectedWidget.message,
+                              size: {
+                                width: width,
+                                height: height,
+                              },
+                              coordinate: {
+                                x: 0,
+                                y: 0,
+                              },
                               theme: selectedWidget.theme,
                               icon: selectedWidget.icon,
                             });
@@ -291,13 +326,7 @@ function MainScreen({ navigation, route }) {
                           )}
                         </TouchableOpacity>
                         <Text style={{ color: "white", fontSize: 28 }}>
-                          {(width.length === 3
-                            ? parseInt(width.slice(0, 2))
-                            : parseInt(width.slice(0, 3))) / 20}{" "}
-                          x{" "}
-                          {(height.length === 3
-                            ? height.slice(0, 2)
-                            : height.slice(0, 3)) / 10}
+                          {`${width} X ${height}`}
                         </Text>
                       </View>
                     ))
@@ -395,6 +424,128 @@ function MainScreen({ navigation, route }) {
         </AnimatedBox>
       </Modal>
       <Modal
+        visible={previewVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() =>
+          OS === "android" ? setPreviewVisible(!previewVisible) : null
+        }
+      >
+        <Modal
+          visible={settingVisible}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => console.log("close")}
+        >
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <View
+              style={{
+                height: SCREEN_HEIGHT / 2,
+                width: SCREEN_WIDTH * 0.8,
+                borderRadius: 15,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: theme.IOS__grey,
+              }}
+            >
+              <Text
+                style={{ color: "white", fontSize: 22, fontWeight: "bold" }}
+              >
+                {editWidget.current.module_name}
+              </Text>
+              <Pressable
+                style={{
+                  ...styles.widgetControllText,
+                  backgroundColor: "skyblue",
+                }}
+                onPress={() => {
+                  setSettingVisible((prev) => !prev);
+                  setPreviewVisible((prev) => !prev);
+                  navigation.navigate("PlaceWidgets", {
+                    module_name: editWidget.current.module_name,
+                    size: {
+                      width: editWidget.current.size.width,
+                      height: editWidget.current.size.height,
+                    },
+                    coordinate: {
+                      x: editWidget.current.coordinate.x,
+                      y: editWidget.current.coordinate.y,
+                    },
+                    theme: selectedWidget.theme,
+                    icon: selectedWidget.icon,
+                  });
+                }}
+              >
+                <Text>위치 변경</Text>
+              </Pressable>
+              <Pressable
+                style={{ ...styles.widgetControllText, backgroundColor: "red" }}
+              >
+                <Text style={{ color: "white" }}>삭제</Text>
+              </Pressable>
+              <Pressable
+                style={{
+                  ...styles.widgetControllText,
+                  backgroundColor: "white",
+                }}
+                onPress={() => setSettingVisible((prev) => !prev)}
+              >
+                <Text>Close</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(128, 128, 128, 0.8)",
+          }}
+          onPress={() => setPreviewVisible(!previewVisible)}
+        />
+        <View style={styles.previewContainer}>
+          {grid.map((row, idx) => (
+            <View key={idx} style={{ flexDirection: "row", height: "10%" }}>
+              {row.map((col, idx) => (
+                <View key={idx} style={styles.gridStyle} />
+              ))}
+            </View>
+          ))}
+          {loading
+            ? null
+            : loadedWidget.map((widget, idx) => {
+                return (
+                  <TouchableOpacity
+                    key={idx}
+                    style={{
+                      ...styles.widgetStyle,
+                      top: `${widget.coordinate.y * 10}%`,
+                      left: `${widget.coordinate.x * 20}%`,
+                      width: `${widget.size.width * 20}%`,
+                      height: `${widget.size.height * 10}%`,
+                    }}
+                    onPress={() => {
+                      // navigation.navigate("PlaceWidgets", {
+                      //   widthSize: DEFAULT_WIDTH,
+                      //   heightSize: DEFAULT_HEIGHT,
+                      // });
+                      // setPreviewVisible(!previewVisible);
+                      selectWidgetSetting(widget);
+                      setSettingVisible((prev) => !prev);
+                    }}
+                  >
+                    <Text style={{ color: "white" }}>{widget.module_name}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+        </View>
+      </Modal>
+      <Modal
         visible={menuVisible}
         animationType="fade"
         transparent={true}
@@ -437,33 +588,37 @@ function MainScreen({ navigation, route }) {
           <Text style={styles.username}>username</Text>
         </View>
       </View>
-      <View style={styles.gridContainer}>
-        {grid.map((row, idx) => (
-          <View key={idx} style={{ flexDirection: "row", height: "10%" }}>
-            {row.map((col, idx) => (
-              <View key={idx} style={styles.gridStyle} />
-            ))}
-          </View>
-        ))}
-        {loading
-          ? null
-          : loadedWidget.map((widget, idx) => {
-              return (
-                <View
-                  key={idx}
-                  style={{
-                    ...styles.widgetStyle,
-                    top: `${widget.coordinate.y * 10}%`,
-                    left: `${widget.coordinate.x * 20}%`,
-                    width: `${widget.size.width * 20}%`,
-                    height: `${widget.size.height * 10}%`,
-                  }}
-                >
-                  <Text style={{ color: "white" }}>{widget.module_name}</Text>
-                </View>
-              );
-            })}
-      </View>
+      <TouchableWithoutFeedback
+        onLongPress={() => setPreviewVisible(!previewVisible)}
+      >
+        <View style={styles.gridContainer}>
+          {grid.map((row, idx) => (
+            <View key={idx} style={{ flexDirection: "row", height: "10%" }}>
+              {row.map((col, idx) => (
+                <View key={idx} style={styles.gridStyle} />
+              ))}
+            </View>
+          ))}
+          {loading
+            ? null
+            : loadedWidget.map((widget, idx) => {
+                return (
+                  <View
+                    key={idx}
+                    style={{
+                      ...styles.widgetStyle,
+                      top: `${widget.coordinate.y * 10}%`,
+                      left: `${widget.coordinate.x * 20}%`,
+                      width: `${widget.size.width * 20}%`,
+                      height: `${widget.size.height * 10}%`,
+                    }}
+                  >
+                    <Text style={{ color: "white" }}>{widget.module_name}</Text>
+                  </View>
+                );
+              })}
+        </View>
+      </TouchableWithoutFeedback>
       <MyButton
         text="위젯 편집"
         onPress={() => {
@@ -508,6 +663,26 @@ const styles = StyleSheet.create({
   widgetScrollContainer: {
     width: "100%",
     paddingHorizontal: 20,
+  },
+
+  previewContainer: {
+    flex: 1,
+    position: "absolute",
+    // absolute 자체적으로 가운데 정렬하기 꿀팁!
+    top: "8%",
+    left: "1%",
+    width: "98%",
+    height: "84%",
+    backgroundColor: "#000",
+    borderRadius: 15,
+  },
+
+  widgetControllText: {
+    borderRadius: 20,
+    height: 30,
+    width: "80%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   menuContainer: {
