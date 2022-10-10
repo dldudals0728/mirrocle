@@ -475,11 +475,11 @@ navigation.reset({
     {
         name: "PlaceWidgets",
         params: {
-        name: selectedWidget.message,
-        widthSize: width,
-        heightSize: height,
-        theme: selectedWidget.theme,
-        icon: selectedWidget.icon,
+            name: selectedWidget.message,
+            widthSize: width,
+            heightSize: height,
+            theme: selectedWidget.theme,
+            icon: selectedWidget.icon,
         },
     },
     ],
