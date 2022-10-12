@@ -11,6 +11,7 @@ import { theme } from "../../colors";
 import { MyButton } from "../components/MyButton";
 import { Logo } from "../components/Logo";
 import { MyTextInput } from "../components/MyTextInput";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 
 function SignIn({ navigation }) {
   const [userId, setUserId] = useState("");
@@ -24,11 +25,31 @@ function SignIn({ navigation }) {
     setUserId("");
     setUserPwd("");
     setCheckPwd("");
+    setUserEmail("");
+    setName("");
+    setIsDuplicate(true);
+    setCheckDuplicate(false);
   };
+
+  async function signInWithServer() {
+    let url = `${IP_ADDRESS}/account/create`;
+    url += `?id=${userId}&pw=${userPwd}&email=${userEmail}&name=${name}`;
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: userId,
+        pw: userPwd,
+        email: userEmail,
+        name: name,
+      }),
+    });
+    // return 값이 없는데 return을 받으려고 하면 SyntaxError: JSON Parse error: Unexpected EOF 에러 발생
+    // const resultCode = await res.json()
+  }
   const signIn = () => {
-    /**
-     * @todo 본인 인증 넣기(전화번호 or pass)
-     */
     if (userId === "") {
       /**
        * @todo 아이디가 DB에 있다 ? 이미 사용중인 아이디 입니다. : null
@@ -83,6 +104,7 @@ function SignIn({ navigation }) {
         },
       ]);
     } else {
+      signInWithServer();
       Alert.alert("회원가입", "회원가입이 완료되었습니다.", [
         {
           text: "OK",
@@ -111,7 +133,7 @@ function SignIn({ navigation }) {
       return;
     }
     setCheckDuplicate(true);
-    if (userId === "root") {
+    if (userId === "abc123") {
       setIsDuplicate(true);
     } else {
       setIsDuplicate(false);

@@ -27,27 +27,26 @@ function Login({ navigation }) {
     setUserPwd("");
   };
   async function loginWithServer() {
-    console.log("login function");
-    let url = "http://" + IP_ADDRESS + ":8080/mirrocle/login";
-    url += `?accountID=${userId}&accountPwd=${userPwd}`;
-    // url += `?id=${userId}&pw=${userPwd}`;
-    const res = await fetch(url).catch((error) => console.log(error));
-    // const res = await fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     id: userId,
-    //     pw: userPwd,
-    //   }),
-    // });
-    const loginCode = await res.json();
-    console.log("login code in function:", loginCode);
-    return loginCode;
+    // let url = "http://" + IP_ADDRESS + ":8080/mirrocle/login";
+    // url += `?accountID=${userId}&accountPwd=${userPwd}`;
+    // const res = await fetch(url).catch((error) => console.log(error));
+    let url = `${IP_ADDRESS}/account/login`;
+    url += `?id=${userId}&pw=${userPwd}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: userId,
+        pw: userPwd,
+      }),
+    });
+    const loginInfo = await res.json();
+    console.log(loginInfo);
+    return loginInfo;
   }
   const login = async () => {
-    console.log("login");
     // 사용자 인증 : User Authentication
     if (userId === "" || userPwd === "") {
       Alert.alert(
@@ -63,12 +62,11 @@ function Login({ navigation }) {
       /**
        * @todo 계속 Promise로 반환하는데...
        */
-      console.log("else");
-      const loginCode = await loginWithServer();
-      console.log(loginCode);
-      console.log("end");
-      if (loginCode === 200) {
-        navigation.reset({ routes: [{ name: "UserList" }] });
+      const loginInfo = await loginWithServer();
+      if (loginInfo.index) {
+        navigation.reset({
+          routes: [{ name: "UserList", params: loginInfo.index }],
+        });
         clearAll();
       } else {
         Alert.alert("로그인 실패", "아이디 혹은 비밀번호 오류입니다.", [

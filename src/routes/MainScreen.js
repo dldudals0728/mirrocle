@@ -45,8 +45,8 @@ function MainScreen({ navigation, route }) {
     console.log(editWidget.current);
   };
 
-  const loadWidgetFromDB = () => {
-    // let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
+  const loadWidgetFromDB = async () => {
+    // let url = "http://" + IP_ADDRESS + "/user/json";
     // fetch(url)
     //   .then((response) => {
     //     response.json().then((result) => {
@@ -61,6 +61,11 @@ function MainScreen({ navigation, route }) {
     //   .catch((err) => {
     //     console.log(err);
     //   });
+    let url = IP_ADDRESS + "/user/json";
+    const res = await fetch(url);
+    const json = await res.json();
+    console.log(json);
+    console.log(typeof json);
     const tempWidget = [
       {
         coordinate: { x: 0, y: 0 },
@@ -467,6 +472,7 @@ function MainScreen({ navigation, route }) {
                 onPress={() => {
                   setSettingVisible((prev) => !prev);
                   setPreviewVisible((prev) => !prev);
+                  console.log(editWidget.current);
                   navigation.navigate("PlaceWidgets", {
                     module_name: editWidget.current.module_name,
                     size: {
@@ -477,8 +483,9 @@ function MainScreen({ navigation, route }) {
                       x: editWidget.current.coordinate.x,
                       y: editWidget.current.coordinate.y,
                     },
-                    theme: selectedWidget.theme,
-                    icon: selectedWidget.icon,
+                    // theme: editWidget.current.theme,
+                    // icon: editWidget.current.icon,
+                    edit: true,
                   });
                 }}
               >
@@ -530,11 +537,6 @@ function MainScreen({ navigation, route }) {
                       height: `${widget.size.height * 10}%`,
                     }}
                     onPress={() => {
-                      // navigation.navigate("PlaceWidgets", {
-                      //   widthSize: DEFAULT_WIDTH,
-                      //   heightSize: DEFAULT_HEIGHT,
-                      // });
-                      // setPreviewVisible(!previewVisible);
                       selectWidgetSetting(widget);
                       setSettingVisible((prev) => !prev);
                     }}

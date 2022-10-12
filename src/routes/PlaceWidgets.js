@@ -26,11 +26,11 @@ const GRID_MARGIN_TOP = 40;
 const GRID_MARGIN_BOTTOM = 120;
 
 function PlaceWidgets({ navigation, route }) {
+  const { size } = route.params;
+  console.log(size);
   BackHandler.addEventListener("hardwareBackPress", () => true);
   const isEdit = route.params.edit === true ? true : false;
-  const gridSizeRef = useRef({ width: 0, height: 0 });
   const widgetSizeRef = useRef({ width: 0, height: 0 });
-  const widgetLocRef = useRef({ left: 0, top: 0, width: 0, height: 0 });
   const [loading, setLoading] = useState(true);
   const [DBLoading, setDBLoading] = useState(false);
   const [widgetList, setWidgetList] = useState([]);
@@ -73,17 +73,21 @@ function PlaceWidgets({ navigation, route }) {
         size: { height: 3, width: 2 },
       },
     ];
-    resWidget = tempWidget.filter((widget) => {
-      return widget.module_name !== route.params.module_name;
-    });
-    setWidgetList(tempWidget);
+    if (isEdit) {
+      resWidget = tempWidget.filter((widget) => {
+        return widget.module_name !== route.params.module_name;
+      });
+    } else {
+      resWidget = tempWidget;
+    }
+
+    setWidgetList(resWidget);
   };
 
   useEffect(() => {
     loadWidgetFromDB();
 
     setDBLoading((prev) => !prev);
-    console.log(widgetLocRef);
     return () => setLoading((prev) => !prev);
   }, []);
 
@@ -105,8 +109,6 @@ function PlaceWidgets({ navigation, route }) {
 
   const onLayoutGrid = (e) => {
     const layoutInfo = e.nativeEvent.layout;
-    gridSizeRef.current.width = layoutInfo.width;
-    gridSizeRef.current.height = layoutInfo.height;
 
     widgetSizeRef.current.width =
       (layoutInfo.width / 5) * route.params.size.width;
@@ -115,27 +117,24 @@ function PlaceWidgets({ navigation, route }) {
 
     setLoading((prev) => !prev);
   };
-  const onLayoutwidget = () => {
-    /**
-     * @todo 왜 onPanResponderRelease보다 leftTopX, leftTopY가 1씩 더 크지 ?????
-     */
-    const gridX = widgetSizeRef.current.width / widgetRowCnt;
-    const gridY = widgetSizeRef.current.height / widgetColCnt;
-    const widgetCellWidth = Math.floor(gridX);
-    const widgetCellHeight = Math.floor(gridY);
-    const leftTopX = parseInt(Math.ceil(gridX) / widgetCellWidth) - 1;
-    const leftTopY = parseInt(Math.ceil(gridY) / widgetCellHeight) - 1;
 
-    console.log("========== onLayout ==========");
-    console.log("leftTopX", leftTopX);
-    console.log("leftTopY", leftTopY);
-    console.log("width", widgetRowCnt);
-    console.log("height", widgetColCnt);
-    console.log("========== onLayout ==========");
-    widgetLocRef.current.left = leftTopX;
-    widgetLocRef.current.top = leftTopY;
-    widgetLocRef.current.width = widgetRowCnt;
-    widgetLocRef.current.height = widgetColCnt;
+  const onLayout = () => {
+    /**
+     * @todo Animated가 언젠 되고 언젠 안되네
+     */
+    const x =
+      (widgetSizeRef.current.width / route.params.size.width) *
+      route.params.coordinate.x;
+    const y =
+      (widgetSizeRef.current.height / route.params.size.height) *
+      route.params.coordinate.y;
+    console.log(route.params.coordinate.x);
+    console.log(route.params.coordinate.y);
+    Animated.spring(position, {
+      toValue: { x: x, y: y },
+      useNativeDriver: false,
+    }).start();
+    console.log("onLayout");
   };
 
   const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
@@ -153,19 +152,6 @@ function PlaceWidgets({ navigation, route }) {
           y: position.y._value,
         });
       },
-      // onPanResponderMove: (event, gesture) => {
-      //   let { dx, dy } = gesture;
-      //   let { moveX, moveY } = gesture;
-      //   const { x0, y0 } = gesture;
-      //   if (moveY >= gridSizeRef.current.height) {
-      //     position.setValue({ x: dx, y: gridSizeRef.current.height });
-      //     position.flattenOffset();
-      //     return;
-      //   } else {
-      //     position.setValue({ x: 0, y: 0 });
-      //     position.setValue({ x: dx, y: dy });
-      //   }
-      // },
       onPanResponderMove: Animated.event(
         [null, { dx: position.x, dy: position.y }],
         {
@@ -432,8 +418,8 @@ function PlaceWidgets({ navigation, route }) {
           <AnimatedBox
             style={{
               ...styles.widgetStyle,
-              left: `${route.params.coordinate.x * 20}%`,
-              top: `${route.params.coordinate.y * 10}%`,
+              left: 0,
+              top: 0,
               width: `${route.params.size.width * 20}%`,
               height: `${route.params.size.height * 10}%`,
               transform: [
@@ -442,7 +428,7 @@ function PlaceWidgets({ navigation, route }) {
               ],
             }}
             {...panResponder.panHandlers}
-            onLayout={onLayoutwidget}
+            onLayout={onLayout}
           >
             <Text style={{ color: "white" }}>{route.params.module_name}</Text>
             {route.params.theme == "Ionicons" && !isEdit ? (

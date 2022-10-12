@@ -6,20 +6,50 @@ import {
   TouchableWithoutFeedback,
   View,
   Dimensions,
+  Image,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Fontisto } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
+import { Icons } from "../../icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-function UserList({ navigation }) {
+function UserList({ navigation, route }) {
   /**
    * @todo 유저 정보를 수정할 수 있도록 버튼 또는 네비게이션 제공
    * @todo 등록된 프리셋이 없다 ? (프리셋을 등록해 보세요 alert; AddUser) : null
    */
+  console.log(route.params);
+
+  const userColList = [0, 0];
+  const userMaxList = [
+    { userName: "Root", userImage: "icon__1", userAPI: "" },
+    { userName: "admin", userImage: "icon__2", userAPI: "" },
+    { userName: null },
+    { userName: null },
+  ];
+
+  async function getUserListFromServer() {
+    let url = `${IP_ADDRESS}/user/login`;
+    url += `?id=${userId}&pw=${userPwd}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: userId,
+        pw: userPwd,
+      }),
+    });
+    const loginInfo = await res.json();
+    console.log(loginInfo);
+    return loginInfo;
+  }
+
   const gotoUser = () => {
     navigation.navigate("MainScreen");
   };
@@ -57,18 +87,49 @@ function UserList({ navigation }) {
     <View style={styles.container}>
       <Logo titleSize={30} style={styles.logoStyle} />
       <View style={styles.userContainer}>
-        <View style={styles.userContainer__col}>
-          <TouchableWithoutFeedback onPress={gotoUser}>
-            <View style={{ ...styles.userBox, backgroundColor: "#CCCCCC" }}>
-              <AntDesign
-                name="user"
-                size={100}
-                color="black"
-                style={styles.userCharacter}
-              />
-              <Text style={styles.userText}>user1</Text>
+        {userColList.map((value, idx) => {
+          const colList = userMaxList.slice(idx * 2, idx * 2 + 2);
+          return (
+            <View style={styles.userContainer__col} key={idx}>
+              {colList.map((value, idx) => {
+                const isNull = value.userName === null;
+                return (
+                  <TouchableWithoutFeedback
+                    onPress={isNull ? addUser : gotoUser}
+                    key={idx}
+                  >
+                    <View
+                      style={{
+                        ...styles.userBox,
+                        backgroundColor: isNull ? "#3A3D40" : "#CCCCCC",
+                      }}
+                    >
+                      {isNull ? (
+                        <AntDesign
+                          name={isNull ? "pluscircle" : "user"}
+                          size={100}
+                          color="black"
+                          style={
+                            isNull ? styles.emptyUser : styles.userCharacter
+                          }
+                        />
+                      ) : (
+                        <Image
+                          style={{ width: 90, height: 90 }}
+                          source={Icons[value.userImage].src}
+                        />
+                      )}
+                      {isNull ? null : (
+                        <Text style={styles.userText}>{value.userName}</Text>
+                      )}
+                    </View>
+                  </TouchableWithoutFeedback>
+                );
+              })}
             </View>
-          </TouchableWithoutFeedback>
+          );
+        })}
+        {/* <View style={styles.userContainer__col}>
           <TouchableWithoutFeedback onPress={gotoUser}>
             <View style={{ ...styles.userBox, backgroundColor: "#CCCCCC" }}>
               <AntDesign
@@ -97,7 +158,7 @@ function UserList({ navigation }) {
               <Text style={styles.payText}>6.99$</Text>
             </View>
           </TouchableWithoutFeedback>
-        </View>
+        </View> */}
       </View>
       <View style={{ width: "100%" }}>
         <MyButton
