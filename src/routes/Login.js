@@ -100,7 +100,7 @@ function Login({ navigation }) {
         text: "OK",
       },
     ]);
-    navigation.navigate("Connection");
+    navigation.navigate("ConnectMirrocle");
   };
   const loginWithKakao = () => {
     navigation.navigate("UserEdit");

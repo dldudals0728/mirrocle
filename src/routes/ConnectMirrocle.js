@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -8,19 +8,19 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-// import { PERMISSIONS, request } from "react-native-permissions";
 import { theme } from "../../colors";
 import { MyButton } from "../components/MyButton";
 import { MyTextInput } from "../components/MyTextInput";
 
-function ConnectMirrocle({ navigation }) {
-  // const requestPermissions = async () => {
-  //   console.log(Platform.OS);
-  //   // error
-  //   const result = await request(PERMISSIONS.IOS.CAMERA);
-  //   console.log(result);
-  // };
+function ConnectMirrocle({ navigation, route }) {
   const [mirrorNumber, setMirrorNumber] = useState("");
+  useEffect(() => {
+    if (route.params) {
+      setMirrorNumber(route.params.SN);
+      connect();
+    }
+  }, []);
+  const scanQRCode = () => navigation.navigate("QRCodeScanner");
   const connect = () => {
     /**
      * @todo 입력된 고유번호(혹은 QRcode)가 DB에 있다 ? (DB user 테이블에 연동기기 설정; UserList) : 입력 오류 입니다.
@@ -51,10 +51,7 @@ function ConnectMirrocle({ navigation }) {
           <View style={{ alignItems: "center", marginBottom: 20 }}>
             <Text>또는</Text>
           </View>
-          <MyButton
-            text="QR Code 촬영"
-            onPress={() => navigation.navigate("Login")}
-          />
+          <MyButton text="QR Code 촬영" onPress={scanQRCode} />
         </View>
       </View>
     </TouchableWithoutFeedback>

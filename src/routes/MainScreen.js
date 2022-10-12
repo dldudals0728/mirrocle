@@ -82,6 +82,11 @@ function MainScreen({ navigation, route }) {
         module_name: "교통정보",
         size: { height: 3, width: 2 },
       },
+      {
+        coordinate: { x: 0, y: 9 },
+        module_name: "ToDo",
+        size: { height: 1, width: 3 },
+      },
     ];
     setLoadedWidget(tempWidget);
   };

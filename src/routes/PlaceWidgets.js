@@ -11,7 +11,6 @@ import {
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
-  Vibration,
   View,
 } from "react-native";
 import { theme } from "../../colors";
@@ -71,6 +70,11 @@ function PlaceWidgets({ navigation, route }) {
         coordinate: { x: 3, y: 4 },
         module_name: "교통정보",
         size: { height: 3, width: 2 },
+      },
+      {
+        coordinate: { x: 0, y: 9 },
+        module_name: "ToDo",
+        size: { height: 1, width: 3 },
       },
     ];
     if (isEdit) {
