@@ -26,10 +26,10 @@ function UserList({ navigation, route }) {
 
   const userColList = [0, 0];
   const userMaxList = [
-    { userName: "Root", userImage: "icon__1", userAPI: "" },
-    { userName: "admin", userImage: "icon__2", userAPI: "" },
-    { userName: null },
-    { userName: null },
+    { userIdx: 0, userName: "Root", userImage: "icon__1", userAPI: "" },
+    { userIdx: 1, userName: "admin", userImage: "icon__2", userAPI: "" },
+    { userIdx: null },
+    { userIdx: null },
   ];
 
   async function getUserListFromServer() {
@@ -50,8 +50,11 @@ function UserList({ navigation, route }) {
     return loginInfo;
   }
 
-  const gotoUser = () => {
-    navigation.navigate("MainScreen");
+  const gotoUser = (username, userIdx) => {
+    navigation.navigate("MainScreen", {
+      username,
+      userIdx,
+    });
   };
   const addUser = () => {
     Alert.alert("add user", "Do you want add user?", [
@@ -92,16 +95,23 @@ function UserList({ navigation, route }) {
           return (
             <View style={styles.userContainer__col} key={idx}>
               {colList.map((value, idx) => {
-                const isNull = value.userName === null;
+                const isNull = value.userIdx === null;
                 return (
                   <TouchableWithoutFeedback
-                    onPress={isNull ? addUser : gotoUser}
+                    onPress={() => {
+                      // isNull ? addUser : gotoUser
+                      if (isNull) {
+                        addUser();
+                      } else {
+                        gotoUser(value.userName, value.userIdx);
+                      }
+                    }}
                     key={idx}
                   >
                     <View
                       style={{
                         ...styles.userBox,
-                        backgroundColor: isNull ? "#3A3D40" : "#CCCCCC",
+                        backgroundColor: isNull ? "#3A3D40" : "#F0F0F0",
                       }}
                     >
                       {isNull ? (

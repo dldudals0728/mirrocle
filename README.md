@@ -532,6 +532,51 @@ this: {
 이렇게 top _ 2 + height = 100(%), left _ 2 + width = 100(%)가 되도록 하면 absolute 자체의 컴포넌트를 가지고 중앙정렬 할 수 있다!<br>
 이 방법을 알아냈을때는 정말 대박이었다 ^^
 
+## onLayout 함수 내에서 Animated
+
+위젯이 onLayout될 때 Animated.spring을 통해 위젯이 올라가자 마자 해당 위치로 이동하도록 조취했는데, 될 때가 있고 안될 때가 있었다.<br>
+구글링을 해보니 나와 같은 현상이 있는 사람을 발견했고, backgroundColor: "transparent"로 하니 해결됐다고 한다.(마찬가지로 이유는 모름)<br>
+하지만 우리 앱은 위젯의 background color가 있어야 구분이 가능하여, 배경색은 그대로 두고, 테두리를 투명으로 하니 고쳐졌다!
+
+```JS
+<AnimatedBox
+    style={{
+        ...styles.widgetStyle,
+
+
+        // backgroundColor: "transparent" 하면 애니메이션이 제대로 되네...? => 테두리를 transparent로!
+        borderColor: "transparent",
+
+
+        transform: [
+        { translateX: position.x },
+        { translateY: position.y },
+        ],
+    }}
+    {...panResponder.panHandlers}
+    onLayout={onLayout}
+    >
+```
+
+## @react-native-community/datetimepicker - Expo Error
+
+```
+npm install @react-native-community/datetimepicker --save
+```
+
+@react-native-community/datetimepicker를 Expo에서 사용하려 하니 다음과 같은 에러가 나왔다.
+
+```
+Invariant Violation: A date or time must be specified as `value` prop
+```
+
+StackOverflow에서 조사를 해보니, 해당 모듈은 native code를 조작해야 하는데, expo는 native code를 가려서 조작할 수 없다.
+
+> expo eject를 통해 할 수 있다. expo project를 꺼내, React Native로 만들어준다.
+> 자세한 내용은 NomadCoder의 Ract Native basic 참고!
+
+그래서 expo로 datepicker를 설치했는데, 이것도 안된다...
+
 # Back-End
 
 ## React Native & spring boot 연동 basic

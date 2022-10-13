@@ -12,6 +12,7 @@ import { PlaceWidgets } from "./src/routes/PlaceWidgets";
 import { UserEdit } from "./src/routes/UserEdit";
 import { FindAccount } from "./src/routes/FindAccount";
 import { QRCodeScanner } from "./src/routes/QRCodeScanner";
+import { ToDos } from "./src/routes/ToDos";
 
 export {
   Loading,
@@ -29,8 +30,8 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* <Stack.Screen name="Loading" component={Loading} /> */}
-        {/* <Stack.Screen name="Login" component={Login} />
+        {/* <Stack.Screen name="Loading" component={Loading} />
+        <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="FindAccount" component={FindAccount} /> */}
         <Stack.Screen name="ConnectMirrocle" component={ConnectMirrocle} />
         <Stack.Screen name="QRCodeScanner" component={QRCodeScanner} />
@@ -47,6 +48,7 @@ const App = () => {
           })}
         />
         <Stack.Screen name="UserEdit" component={UserEdit} />
+        <Stack.Screen name="ToDos" component={ToDos} />
       </Stack.Navigator>
     </NavigationContainer>
   );

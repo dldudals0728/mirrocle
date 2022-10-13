@@ -55,28 +55,67 @@ function PlaceWidgets({ navigation, route }) {
     //   .catch((err) => {
     //     console.log(err);
     //   });
-    const tempWidget = [
-      {
+
+    // const tempWidget = [
+    //   {
+    //     coordinate: { x: 0, y: 0 },
+    //     module_name: "시계",
+    //     size: { height: 2, width: 2 },
+    //   },
+    //   {
+    //     coordinate: { x: 4, y: 0 },
+    //     module_name: "날씨",
+    //     size: { height: 1, width: 1 },
+    //   },
+    //   {
+    //     coordinate: { x: 3, y: 4 },
+    //     module_name: "교통정보",
+    //     size: { height: 3, width: 2 },
+    //   },
+    //   {
+    //     coordinate: { x: 0, y: 9 },
+    //     module_name: "ToDo",
+    //     size: { height: 1, width: 3 },
+    //   },
+    // ];
+
+    const tempWidget = {
+      0: {
+        key: "0",
         coordinate: { x: 0, y: 0 },
         module_name: "시계",
         size: { height: 2, width: 2 },
+        attribute: {},
       },
-      {
+      1: {
+        key: "1",
         coordinate: { x: 4, y: 0 },
         module_name: "날씨",
         size: { height: 1, width: 1 },
+        attribute: {
+          attr_name: "위치 설정",
+        },
       },
-      {
+      2: {
+        key: "2",
         coordinate: { x: 3, y: 4 },
         module_name: "교통정보",
         size: { height: 3, width: 2 },
+        attribute: {
+          attr_name: "위치 설정",
+        },
       },
-      {
+      3: {
+        key: "3",
         coordinate: { x: 0, y: 9 },
         module_name: "ToDo",
         size: { height: 1, width: 3 },
+        attribute: {
+          attr_name: "ToDo list 편집",
+        },
       },
-    ];
+    };
+
     if (isEdit) {
       resWidget = tempWidget.filter((widget) => {
         return widget.module_name !== route.params.module_name;
@@ -137,8 +176,8 @@ function PlaceWidgets({ navigation, route }) {
     Animated.spring(position, {
       toValue: { x: x, y: y },
       useNativeDriver: false,
-    }).start();
-    console.log("onLayout");
+    }).start(() => console.log("Animation is end!"));
+    // position.setValue({ x: x, y: y });
   };
 
   const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
@@ -336,7 +375,8 @@ function PlaceWidgets({ navigation, route }) {
     console.log("=========================");
     console.log(widgetList);
     let isStack = false;
-    widgetList.map((widget, idx) => {
+    Object.keys(widgetList).map((key, idx) => {
+      const widget = widgetList[key];
       const loadedWidget = {
         width: widget.size.width,
         height: widget.size.height,
@@ -402,7 +442,8 @@ function PlaceWidgets({ navigation, route }) {
         ))}
         {loading
           ? null
-          : widgetList.map((widget, idx) => {
+          : Object.keys(widgetList).map((key, idx) => {
+              const widget = widgetList[key];
               return (
                 <View
                   key={idx}
@@ -426,6 +467,8 @@ function PlaceWidgets({ navigation, route }) {
               top: 0,
               width: `${route.params.size.width * 20}%`,
               height: `${route.params.size.height * 10}%`,
+              // backgroundColor: "transparent" 하면 애니메이션이 제대로 되네...? => 테두리를 transparent로!
+              borderColor: "transparent",
               transform: [
                 { translateX: position.x },
                 { translateY: position.y },

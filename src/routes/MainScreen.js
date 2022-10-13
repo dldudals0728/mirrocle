@@ -1,5 +1,8 @@
+import * as Location from "expo-location";
 import { StatusBar } from "expo-status-bar";
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
   Modal,
@@ -29,20 +32,81 @@ const AnimatedBox = Animated.createAnimatedComponent(View);
 const OS = Platform.OS;
 
 function MainScreen({ navigation, route }) {
+  const [indicatorVisible, setIndicatorVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [widgetListVisible, setWidgetListVisible] = useState(false);
   const [widgetDetailVisible, setWidgetDetailVisible] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState({});
   const [loading, setLoading] = useState(true);
-  const [loadedWidget, setLoadedWidget] = useState([]);
+  const [loadedWidget, setLoadedWidget] = useState({});
   const [previewVisible, setPreviewVisible] = useState(false);
 
   const [settingVisible, setSettingVisible] = useState(false);
   const editWidget = useRef({});
 
+  const getLocation = async () => {
+    setIndicatorVisible((prev) => !prev);
+    const { granted } = await Location.requestForegroundPermissionsAsync();
+    if (!granted) {
+      Alert.alert(
+        "위치정보 권한 요청 실패",
+        "위치정보 권한 요청이 거절되었습니다.",
+        [
+          {
+            text: "OK",
+          },
+        ]
+      );
+      return;
+    }
+    const {
+      coords: { latitude, longitude },
+    } = await Location.getCurrentPositionAsync({ accuracy: 5 });
+    const location = await Location.reverseGeocodeAsync(
+      { latitude, longitude },
+      { useGoogleMaps: false }
+    );
+    const temp = { ...loadedWidget };
+    temp[editWidget.current.key].attribute.attr_member.city = location[0].city;
+    temp[editWidget.current.key].attribute.attr_member.latitude = latitude;
+    temp[editWidget.current.key].attribute.attr_member.longitude = longitude;
+
+    setLoadedWidget(temp);
+    setIndicatorVisible((prev) => !prev);
+    console.log("finish!");
+  };
+
   const selectWidgetSetting = (widget) => {
     editWidget.current = widget;
     console.log(editWidget.current);
+  };
+
+  const editWidgetAttribute = (funcName) => {
+    if (funcName === "ToDo list 편집") {
+      navigation.navigate("ToDos", {
+        username: route.params.username,
+      });
+    } else if (funcName === "위치 설정") {
+      getLocation();
+    }
+  };
+
+  const deleteWidget = (key) => {
+    /**
+     * 객체 삭제 -> 키값 0 ~ length - 1로 재설정 -> value의 key값 "0" ~ "length - 1"로 재설정
+     */
+    const newWidgetList = {};
+    const widgetList = { ...loadedWidget };
+    delete widgetList[key];
+    const arrayWidgetList = Object.values(widgetList);
+    arrayWidgetList.forEach((value, idx) => {
+      value.key = idx.toString();
+      newWidgetList[parseInt(idx)] = value;
+    });
+    console.log(widgetList);
+    console.log("==================");
+    console.log(newWidgetList);
+    setLoadedWidget(newWidgetList);
   };
 
   const loadWidgetFromDB = async () => {
@@ -64,30 +128,72 @@ function MainScreen({ navigation, route }) {
     let url = IP_ADDRESS + "/user/json";
     const res = await fetch(url);
     const json = await res.json();
-    console.log(json);
+    console.log("json:", json);
     console.log(typeof json);
-    const tempWidget = [
-      {
+    // const tempWidget = [
+    //   {
+    //     coordinate: { x: 0, y: 0 },
+    //     module_name: "시계",
+    //     size: { height: 2, width: 2 },
+    //   },
+    //   {
+    //     coordinate: { x: 4, y: 0 },
+    //     module_name: "날씨",
+    //     size: { height: 1, width: 1 },
+    //   },
+    //   {
+    //     coordinate: { x: 3, y: 4 },
+    //     module_name: "교통정보",
+    //     size: { height: 3, width: 2 },
+    //   },
+    //   {
+    //     coordinate: { x: 0, y: 9 },
+    //     module_name: "ToDo",
+    //     size: { height: 1, width: 3 },
+    //   },
+    // ];
+
+    const tempWidget = {
+      0: {
+        key: "0",
         coordinate: { x: 0, y: 0 },
         module_name: "시계",
         size: { height: 2, width: 2 },
+        attribute: {},
       },
-      {
+      1: {
+        key: "1",
         coordinate: { x: 4, y: 0 },
         module_name: "날씨",
         size: { height: 1, width: 1 },
+        attribute: {
+          attr_name: "위치 설정",
+          attr_member: {
+            latitude: 0,
+            longitude: 0,
+            city: "",
+          },
+        },
       },
-      {
+      2: {
+        key: "2",
         coordinate: { x: 3, y: 4 },
         module_name: "교통정보",
         size: { height: 3, width: 2 },
+        attribute: {
+          attr_name: "위치 설정",
+        },
       },
-      {
+      3: {
+        key: "3",
         coordinate: { x: 0, y: 9 },
         module_name: "ToDo",
         size: { height: 1, width: 3 },
+        attribute: {
+          attr_name: "ToDo list 편집",
+        },
       },
-    ];
+    };
     setLoadedWidget(tempWidget);
   };
 
@@ -223,6 +329,10 @@ function MainScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
+      <ActivityIndicator
+        animating={indicatorVisible}
+        style={{ position: "absolute", top: "50%", zIndex: 2 }}
+      />
       <Modal
         visible={widgetListVisible}
         animationType="slide"
@@ -462,16 +572,41 @@ function MainScreen({ navigation, route }) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: theme.IOS__grey,
+                paddingLeft: "10%",
+                paddingRight: "10%",
               }}
             >
               <Text
-                style={{ color: "white", fontSize: 22, fontWeight: "bold" }}
+                style={{
+                  color: "white",
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  marginBottom: 20,
+                }}
               >
                 {editWidget.current.module_name}
               </Text>
-              <Pressable
+              {Object.keys(editWidget.current).length !== 0 &&
+              editWidget.current.attribute.attr_name ? (
+                <TouchableOpacity
+                  style={{
+                    ...styles.widgetControllButton,
+                    backgroundColor: "aliceblue",
+                  }}
+                  onPress={() => {
+                    setPreviewVisible(!previewVisible);
+                    setSettingVisible(!settingVisible);
+                    editWidgetAttribute(editWidget.current.attribute.attr_name);
+                  }}
+                >
+                  <Text style={styles.widgetControllText}>
+                    {editWidget.current.attribute.attr_name}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+              <TouchableOpacity
                 style={{
-                  ...styles.widgetControllText,
+                  ...styles.widgetControllButton,
                   backgroundColor: "skyblue",
                 }}
                 onPress={() => {
@@ -494,22 +629,55 @@ function MainScreen({ navigation, route }) {
                   });
                 }}
               >
-                <Text>위치 변경</Text>
-              </Pressable>
-              <Pressable
-                style={{ ...styles.widgetControllText, backgroundColor: "red" }}
-              >
-                <Text style={{ color: "white" }}>삭제</Text>
-              </Pressable>
-              <Pressable
+                <Text style={styles.widgetControllText}>위젯 위치 변경</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 style={{
-                  ...styles.widgetControllText,
+                  ...styles.widgetControllButton,
+                  backgroundColor: "red",
+                }}
+                onPress={() => {
+                  Alert.alert(
+                    "위젯 삭제",
+                    `${editWidget.current.module_name} 위젯을 삭제하시겠습니까?`,
+                    [
+                      {
+                        text: "cancel",
+                      },
+                      {
+                        text: "OK",
+                        onPress: () => {
+                          Alert.alert(
+                            "완료",
+                            "위젯이 성공적으로 삭제되었습니다.",
+                            [
+                              {
+                                text: "OK",
+                              },
+                            ]
+                          );
+                          setPreviewVisible(!previewVisible);
+                          setSettingVisible(!settingVisible);
+                          deleteWidget(editWidget.current.key);
+                        },
+                      },
+                    ]
+                  );
+                }}
+              >
+                <Text style={{ ...styles.widgetControllText, color: "white" }}>
+                  삭제
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  ...styles.widgetControllButton,
                   backgroundColor: "white",
                 }}
                 onPress={() => setSettingVisible((prev) => !prev)}
               >
-                <Text>Close</Text>
-              </Pressable>
+                <Text style={styles.widgetControllText}>Close</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -530,7 +698,8 @@ function MainScreen({ navigation, route }) {
           ))}
           {loading
             ? null
-            : loadedWidget.map((widget, idx) => {
+            : Object.keys(loadedWidget).map((key, idx) => {
+                const widget = loadedWidget[key];
                 return (
                   <TouchableOpacity
                     key={idx}
@@ -592,11 +761,13 @@ function MainScreen({ navigation, route }) {
       <View style={styles.header}>
         <Logo imageSize={40} titleSize={15} subTextSize={8} />
         <View>
-          <Text style={styles.username}>username</Text>
+          <Text style={styles.username}>{route.params.username}</Text>
         </View>
       </View>
       <TouchableWithoutFeedback
-        onLongPress={() => setPreviewVisible(!previewVisible)}
+        onLongPress={() =>
+          indicatorVisible ? null : setPreviewVisible(!previewVisible)
+        }
       >
         <View style={styles.gridContainer}>
           {grid.map((row, idx) => (
@@ -608,7 +779,8 @@ function MainScreen({ navigation, route }) {
           ))}
           {loading
             ? null
-            : loadedWidget.map((widget, idx) => {
+            : Object.keys(loadedWidget).map((key, idx) => {
+                const widget = loadedWidget[key];
                 return (
                   <View
                     key={idx}
@@ -627,9 +799,12 @@ function MainScreen({ navigation, route }) {
         </View>
       </TouchableWithoutFeedback>
       <MyButton
-        text="위젯 편집"
+        text="위젯 추가"
         onPress={() => {
           // 모달을 두 개 이상 띄울 수 없다. 닫고 띄우기
+          if (indicatorVisible) {
+            return;
+          }
           setMenuVisible(!menuVisible);
           setWidgetListVisible(!widgetListVisible);
         }}
@@ -684,12 +859,24 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
 
-  widgetControllText: {
-    borderRadius: 20,
-    height: 30,
-    width: "80%",
+  widgetButtonContainer: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+  },
+
+  widgetControllButton: {
+    borderRadius: 10,
+    marginBottom: "10%",
+    height: "10%",
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  widgetControllText: {
+    fontSize: 18,
+    fontWeight: "600",
   },
 
   menuContainer: {
