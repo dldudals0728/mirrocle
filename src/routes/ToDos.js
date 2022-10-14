@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
+  Alert,
+  Animated,
   Keyboard,
   Modal,
   Platform,
@@ -12,13 +14,26 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MyButton } from "../components/MyButton";
 
 const OS = Platform.OS;
+const AnimatedBox = Animated.createAnimatedComponent(View);
 
 function ToDos({ navigation, route }) {
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const AnimRef = useRef([]);
+
+  /**
+   * @todo ToDo 삭제 애니메이션 넣기!
+   */
+
+  const completeToDo = (key) => {
+    const newToDos = { ...toDos };
+    newToDos[key].isCompleted = !newToDos[key].isCompleted;
+    setToDos(newToDos);
+  };
 
   const addToDo = () => {
     if (!text) {
@@ -26,20 +41,56 @@ function ToDos({ navigation, route }) {
     }
     setText("");
 
+    AnimRef.current.push(new Animated.Value(1));
     const newToDos = {
       ...toDos,
       [Date.now()]: {
         text,
+        isCompleted: false,
         dueDate: Object.keys(toDos).length % 2 === 0 ? null : "2020년",
       },
     };
     setToDos(newToDos);
   };
 
-  const deleteToDos = (key) => {
-    const newToDos = { ...toDos };
-    delete newToDos[key];
-    setToDos(newToDos);
+  const deleteToDos = (key, idx) => {
+    Animated.timing(AnimRef.current[idx], {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: false,
+    }).start(() => {
+      /**
+       * 사라지는 애니메이션이 끝난 후, 애니메이션 배열을 조작해주고 toDos를 수정해 준다.
+       */
+      deleteAnim(idx);
+      const newToDos = { ...toDos };
+      delete newToDos[key];
+      setToDos(newToDos);
+    });
+  };
+
+  const deleteAnim = (index) => {
+    const newList = AnimRef.current.filter((value, idx) => idx !== index);
+    AnimRef.current = newList;
+  };
+
+  const saveToDos = () => {
+    Alert.alert("ToDo list 저장", "현재 작업을 저장하시겠습니까?", [
+      {
+        text: "cancel",
+      },
+      {
+        text: "OK",
+        onPress: () => {
+          Alert.alert("저장 완료", "ToDo list가 저장되었습니다.", [
+            {
+              text: "OK",
+            },
+          ]);
+          navigation.pop();
+        },
+      },
+    ]);
   };
   return (
     <View style={styles.container}>
@@ -59,6 +110,9 @@ function ToDos({ navigation, route }) {
       </Modal>
       <View style={styles.header}>
         <Text style={styles.headerText}>{route.params.username}</Text>
+        <Text style={{ fontSize: 24, fontWeight: "600", color: "#808080" }}>
+          ToDo List
+        </Text>
       </View>
       <View>
         <TextInput
@@ -74,11 +128,37 @@ function ToDos({ navigation, route }) {
         onScrollBeginDrag={() => Keyboard.dismiss()}
         scrollEventThrottle={0}
       >
-        {Object.keys(toDos).map((key) => {
+        {Object.keys(toDos).map((key, idx) => {
           return (
-            <View key={key}>
+            <AnimatedBox key={key} style={{ opacity: AnimRef.current[idx] }}>
               <View style={styles.toDo}>
-                <Text style={styles.toDoText}>{toDos[key].text}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <TouchableOpacity onPress={() => completeToDo(key)}>
+                    <MaterialCommunityIcons
+                      name={
+                        toDos[key].isCompleted
+                          ? "checkbox-marked-outline"
+                          : "checkbox-blank-outline"
+                      }
+                      style={{
+                        ...styles.toDoText,
+                        fontSize: 28,
+                        marginRight: 12,
+                      }}
+                    />
+                  </TouchableOpacity>
+                  <Text
+                    style={{
+                      ...styles.toDoText,
+                      textDecorationLine: toDos[key].isCompleted
+                        ? "line-through"
+                        : "none",
+                      color: toDos[key].isCompleted ? "#808080" : "white",
+                    }}
+                  >
+                    {toDos[key].text}
+                  </Text>
+                </View>
                 <View style={{ flexDirection: "row" }}>
                   <TouchableOpacity
                     onPress={() => setCalendarVisible(!calendarVisible)}
@@ -91,7 +171,7 @@ function ToDos({ navigation, route }) {
                       style={{ ...styles.toDoText, fontSize: 28 }}
                     /> */}
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deleteToDos(key)}>
+                  <TouchableOpacity onPress={() => deleteToDos(key, idx)}>
                     <MaterialCommunityIcons
                       name="trash-can-outline"
                       style={{ ...styles.toDoText, fontSize: 28 }}
@@ -116,10 +196,20 @@ function ToDos({ navigation, route }) {
                   <Text style={styles.toDoText}>2020년</Text>
                 </View>
               ) : null} */}
-            </View>
+            </AnimatedBox>
           );
         })}
       </ScrollView>
+      <MyButton
+        text="저장 & 돌아가기"
+        style={{
+          borderColor: "white",
+          backgroundColor: "transparent",
+          marginTop: 12,
+        }}
+        textStyle={{ color: "white" }}
+        onPress={saveToDos}
+      />
       <StatusBar style="light" />
     </View>
   );
@@ -134,6 +224,9 @@ const styles = StyleSheet.create({
 
   header: {
     marginTop: 60,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 
   headerText: {

@@ -626,6 +626,7 @@ function MainScreen({ navigation, route }) {
                     // theme: editWidget.current.theme,
                     // icon: editWidget.current.icon,
                     edit: true,
+                    key: editWidget.current.key,
                   });
                 }}
               >

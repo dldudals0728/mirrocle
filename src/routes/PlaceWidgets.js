@@ -117,14 +117,9 @@ function PlaceWidgets({ navigation, route }) {
     };
 
     if (isEdit) {
-      resWidget = tempWidget.filter((widget) => {
-        return widget.module_name !== route.params.module_name;
-      });
-    } else {
-      resWidget = tempWidget;
+      delete tempWidget[route.params.key];
     }
-
-    setWidgetList(resWidget);
+    setWidgetList(tempWidget);
   };
 
   useEffect(() => {
