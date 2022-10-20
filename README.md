@@ -577,6 +577,40 @@ StackOverflow에서 조사를 해보니, 해당 모듈은 native code를 조작�
 
 그래서 expo로 datepicker를 설치했는데, 이것도 안된다...
 
+## data.go.kr API 오류
+
+> <i>tip: API 요청으로 얻은 결과를 .json()으로 포맷할 때 에러가 생긴다면, .text()로 에러코드를 확인하자!</i>
+
+```xml
+<OpenAPI_ServiceResponse>
+    <cmmMsgHeader>
+        <errMsg>SERVICE ERROR</errMsg>
+        <returnAuthMsg>SERVICE_KEY_IS_NOT_REGISTERED_ERROR</returnAuthMsg>
+        <returnReasonCode>30</returnReasonCode>
+    </cmmMsgHeader>
+</OpenAPI_ServiceResponse>
+```
+
+react-native로 개발하다가 만난 API 오류이다. react에서 정상적으로 작동하는 코드를 긁어다가 사용했는데도 이런 에러가 나왔다.<br>
+해결 방법은 한글로 값이 들어가는 부분을 다음과 같이 사용했다.
+
+- 추가
+
+```
+Possible Unhandled Promise Rejection (id: 0):
+TypeError: Already read
+```
+
+TypeError: Already read 에러는 result로 받은 값을 .json()이나 .text()로 변환한 후에 한번 더 호출하게 되면 발생되는 에러이다.<br>
+코드에 중복이 있는지 잘 찾아보자!!
+
+```JS
+encodeURIComponent("한글 데이터");
+```
+
+data.go.kr에서 사용하라고 한 방법이긴 한데... 왜 react에서는 encodeURIComponent 함수 없이도 됐는데 왜 react-native는 안된다는 것인가.<br>
+22.10.19 22:56 기준으로 문의사항으로 넣어놨다.
+
 # Back-End
 
 ## React Native & spring boot 연동 basic

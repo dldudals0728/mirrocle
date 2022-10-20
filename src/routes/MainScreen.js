@@ -5,6 +5,7 @@ import {
   Alert,
   Animated,
   Dimensions,
+  Keyboard,
   Modal,
   PanResponder,
   Platform,
@@ -24,14 +25,35 @@ import { widgetList, widgetSizeList } from "../../Widgets";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
+import { MyTextInput } from "../components/MyTextInput";
 import { IP_ADDRESS } from "../../temp/IPAddress";
+import { API_KEYS } from "../../temp/API";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 10;
 const AnimatedBox = Animated.createAnimatedComponent(View);
 const OS = Platform.OS;
 
+const subwayColor = {
+  "서울 1호선": "#0052A4",
+  "서울 2호선": "#009D3E",
+  "서울 3호선": "#EF7C1C",
+  "서울 4호선": "#00A5DE",
+  "서울 5호선": "#996CAC",
+  "서울 6호선": "#CD7C2F",
+  "서울 7호선": "#BDB092",
+  "서울 8호선": "#EA545D",
+  "서울 9호선": "#BDB092",
+  우이신설: "#B0CE18",
+  경춘: "#0C8E72",
+  경의중앙: "#77C4A3",
+  수인분당: "#F5A200",
+  신분당: "#D4003B",
+  공항: "#0090D2",
+};
+
 function MainScreen({ navigation, route }) {
+  const [isKeyboardShow, setIsKeyboardShow] = useState(false);
   const [indicatorVisible, setIndicatorVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [widgetListVisible, setWidgetListVisible] = useState(false);
@@ -39,10 +61,27 @@ function MainScreen({ navigation, route }) {
   const [selectedWidget, setSelectedWidget] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadedWidget, setLoadedWidget] = useState({});
-  const [previewVisible, setPreviewVisible] = useState(false);
 
+  const [previewVisible, setPreviewVisible] = useState(false);
   const [settingVisible, setSettingVisible] = useState(false);
+  const [attributeVisible, setAttributeVisible] = useState(false);
+
+  const [isWidgetSelected, setIsWidgetSelected] = useState(false);
   const editWidget = useRef({});
+
+  const [weather, setWeather] = useState({
+    latitude: 0,
+    longitude: 0,
+    city: "",
+  });
+  const [station, setStation] = useState({
+    subwayStationName: "",
+    subwayRouteName: "",
+    subwayStationId: "",
+  });
+
+  const [stationName, setStationName] = useState("");
+  const [stationList, setStationList] = useState([]);
 
   const getLocation = async () => {
     setIndicatorVisible((prev) => !prev);
@@ -67,28 +106,101 @@ function MainScreen({ navigation, route }) {
       { useGoogleMaps: false }
     );
     const temp = { ...loadedWidget };
-    temp[editWidget.current.key].attribute.attr_member.city = location[0].city;
+    temp[
+      editWidget.current.key
+    ].attribute.attr_member.city = `${location[0].city} ${location[0].district}`;
     temp[editWidget.current.key].attribute.attr_member.latitude = latitude;
     temp[editWidget.current.key].attribute.attr_member.longitude = longitude;
+    temp[
+      editWidget.current.key
+    ].attribute.main = `${location[0].city} ${location[0].district}`;
 
     setLoadedWidget(temp);
     setIndicatorVisible((prev) => !prev);
     console.log("finish!");
   };
 
-  const selectWidgetSetting = (widget) => {
-    editWidget.current = widget;
-    console.log(editWidget.current);
+  const getStation = async () => {
+    if (stationName === "") {
+      Alert.alert("검색어 오류", "검색어를 입력해주세요.", [
+        {
+          text: "OK",
+        },
+      ]);
+      return;
+    }
+    setIndicatorVisible(true);
+    const API = API_KEYS.seoulSubwayStationInfo;
+    const url = `http://apis.data.go.kr/1613000/SubwayInfoService/getKwrdFndSubwaySttnList?serviceKey=${API}&pageNo=${"1"}&numOfRows=${"1000"}&_type=${"json"}&subwayStationName=${encodeURIComponent(
+      stationName
+    )}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    const stationList = Array.isArray(json.response.body.items.item)
+      ? json.response.body.items.item
+      : json.response.body.items.item === undefined
+      ? []
+      : [json.response.body.items.item];
+    const supportedStationList = stationList.filter((station) => {
+      return Object.keys(subwayColor).includes(station.subwayRouteName);
+    });
+    setStationList(supportedStationList);
+    setIndicatorVisible(false);
   };
 
-  const editWidgetAttribute = (funcName) => {
-    if (funcName === "ToDo list 편집") {
-      navigation.navigate("ToDos", {
-        username: route.params.username,
-      });
-    } else if (funcName === "위치 설정") {
-      getLocation();
+  const saveStation = () => {
+    if (!station.subwayStationId) {
+      Alert.alert("역 선택 오류", "역이 선택되지 않았습니다!", [
+        {
+          text: "OK",
+        },
+      ]);
+      return;
+    } else {
+      Alert.alert(
+        `${station.subwayRouteName}\n${station.subwayStationName}`,
+        "해당 역으로 설정하시겠습니까?",
+        [
+          {
+            text: "cancel",
+          },
+          {
+            text: "OK",
+            onPress: () => {
+              Alert.alert("완료", "역이 설정되었습니다.", [
+                {
+                  text: "OK",
+                },
+              ]);
+              const temp = { ...loadedWidget };
+              temp[
+                editWidget.current.key
+              ].attribute.attr_member.subwayStationName =
+                station.subwayStationName;
+              temp[
+                editWidget.current.key
+              ].attribute.attr_member.subwayRouteName = station.subwayRouteName;
+              temp[
+                editWidget.current.key
+              ].attribute.attr_member.subwayStationId = station.subwayStationId;
+              temp[
+                editWidget.current.key
+              ].attribute.main = `${station.subwayRouteName}\n${station.subwayStationName}`;
+
+              setLoadedWidget(temp);
+              setAttributeVisible(!attributeVisible);
+              setSettingVisible(!settingVisible);
+            },
+          },
+        ]
+      );
     }
+  };
+
+  const selectWidgetSetting = (widget) => {
+    editWidget.current = widget;
+    !isWidgetSelected ? setIsWidgetSelected(true) : null;
+    console.log("editWidget.current:", editWidget.current);
   };
 
   const deleteWidget = (key) => {
@@ -159,7 +271,11 @@ function MainScreen({ navigation, route }) {
         coordinate: { x: 0, y: 0 },
         module_name: "시계",
         size: { height: 2, width: 2 },
-        attribute: {},
+        attribute: {
+          main: "",
+          attr_name: "",
+          attr_member: {},
+        },
       },
       1: {
         key: "1",
@@ -167,6 +283,7 @@ function MainScreen({ navigation, route }) {
         module_name: "날씨",
         size: { height: 1, width: 1 },
         attribute: {
+          main: "",
           attr_name: "위치 설정",
           attr_member: {
             latitude: 0,
@@ -178,10 +295,16 @@ function MainScreen({ navigation, route }) {
       2: {
         key: "2",
         coordinate: { x: 3, y: 4 },
-        module_name: "교통정보",
+        module_name: "교통정보(지하철)",
         size: { height: 3, width: 2 },
         attribute: {
-          attr_name: "위치 설정",
+          main: "",
+          attr_name: "지하철 역 선택",
+          attr_member: {
+            subwayStationName: "",
+            subwayRouteName: "",
+            subwayStationId: "",
+          },
         },
       },
       3: {
@@ -190,14 +313,21 @@ function MainScreen({ navigation, route }) {
         module_name: "ToDo",
         size: { height: 1, width: 3 },
         attribute: {
+          main: "",
           attr_name: "ToDo list 편집",
+          attr_member: {},
         },
       },
     };
     setLoadedWidget(tempWidget);
   };
 
+  const keyboardShow = () => setIsKeyboardShow((prev) => !prev);
+  const keyboradHide = () => setIsKeyboardShow((prev) => !prev);
+
   useEffect(() => {
+    Keyboard.addListener("keyboardDidShow", keyboardShow);
+    Keyboard.addListener("keyboardDidHide", keyboradHide);
     loadWidgetFromDB();
     setLoading((prev) => !prev);
     return () => setLoading((prev) => !prev);
@@ -331,7 +461,7 @@ function MainScreen({ navigation, route }) {
     <View style={styles.container}>
       <ActivityIndicator
         animating={indicatorVisible}
-        style={{ position: "absolute", top: "50%", zIndex: 2 }}
+        style={{ position: "absolute", top: "50%", zIndex: 50 }}
       />
       <Modal
         visible={widgetListVisible}
@@ -557,6 +687,272 @@ function MainScreen({ navigation, route }) {
           transparent={true}
           onRequestClose={() => console.log("close")}
         >
+          <Modal
+            visible={attributeVisible}
+            animationType="fade"
+            transparent={true}
+            onRequestClose={() => console.log("close")}
+          >
+            <Pressable
+              style={{
+                flex: 1,
+                backgroundColor: "transparent",
+              }}
+              onPress={() => {
+                console.log(isKeyboardShow);
+                if (isKeyboardShow) {
+                  Keyboard.dismiss();
+                } else {
+                  indicatorVisible
+                    ? null
+                    : setAttributeVisible(!attributeVisible);
+                }
+              }}
+            />
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                position: "absolute",
+                top: SCREEN_HEIGHT * 0.2,
+                left: SCREEN_WIDTH * 0.1,
+              }}
+            >
+              <View
+                style={{
+                  height: SCREEN_HEIGHT * 0.6,
+                  width: SCREEN_WIDTH * 0.8,
+                  borderRadius: 15,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: theme.IOS__grey,
+                }}
+              >
+                <ActivityIndicator
+                  animating={indicatorVisible}
+                  style={{ position: "absolute", top: "49%", zIndex: 50 }}
+                />
+                {isWidgetSelected &&
+                editWidget.current.attribute.attr_name === "지하철 역 선택" ? (
+                  <View
+                    style={{
+                      flex: 1,
+                      width: "100%",
+                      paddingHorizontal: "5%",
+                    }}
+                  >
+                    <MyTextInput
+                      placeholder="지하철 역 검색"
+                      value={stationName}
+                      onChangeText={setStationName}
+                      returnKeyType="done"
+                      onSubmitEditing={getStation}
+                      style={{
+                        marginTop: 20,
+                        marginBottom: 10,
+                      }}
+                    />
+                    <View
+                      style={{
+                        ...styles.stationContainer,
+                        marginBottom: 5,
+                        justifyContent: "center",
+                        borderColor: station.subwayStationId
+                          ? subwayColor[station.subwayRouteName]
+                          : "black",
+                      }}
+                    >
+                      {station.subwayStationId ? (
+                        <View
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={{ fontSize: 16 }}>
+                            {station.subwayStationName}
+                          </Text>
+                          <View
+                            style={{
+                              width: station.subwayRouteName.includes("서울")
+                                ? 30
+                                : null,
+                              height: station.subwayRouteName.includes("서울")
+                                ? 30
+                                : null,
+                              borderRadius: 15,
+                              borderWidth: 3,
+                              borderColor: subwayColor[station.subwayRouteName],
+                              justifyContent: "center",
+                              alignItems: "center",
+                              padding: 5,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: subwayColor[station.subwayRouteName],
+                              }}
+                            >
+                              {station.subwayRouteName.includes("서울")
+                                ? station.subwayRouteName[3]
+                                : station.subwayRouteName}
+                            </Text>
+                          </View>
+                        </View>
+                      ) : (
+                        <Text style={{ fontSize: 18 }}>
+                          지하철을 선택해주세요.
+                        </Text>
+                      )}
+                    </View>
+                    <View
+                      style={{
+                        height: 1,
+                        width: "100%",
+                        borderColor: "white",
+                        borderWidth: 0.5,
+                        marginBottom: 5,
+                      }}
+                    ></View>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                      {stationList.length !== 0 ? (
+                        stationList.map((value, idx) => {
+                          return (
+                            <TouchableOpacity
+                              key={idx}
+                              onPress={() => {
+                                const selectedStation = {
+                                  subwayStationName: value.subwayStationName,
+                                  subwayRouteName: value.subwayRouteName,
+                                  subwayStationId: value.subwayStationId,
+                                };
+                                setStation(selectedStation);
+                              }}
+                            >
+                              <View
+                                style={{
+                                  ...styles.stationContainer,
+                                  borderColor:
+                                    subwayColor[value.subwayRouteName],
+                                }}
+                              >
+                                <Text style={{ fontSize: 16 }}>
+                                  {value.subwayStationName}
+                                </Text>
+                                <View
+                                  style={{
+                                    width: value.subwayRouteName.includes(
+                                      "서울"
+                                    )
+                                      ? 30
+                                      : null,
+                                    height: value.subwayRouteName.includes(
+                                      "서울"
+                                    )
+                                      ? 30
+                                      : null,
+                                    borderRadius: 15,
+                                    borderWidth: 3,
+                                    borderColor:
+                                      subwayColor[value.subwayRouteName],
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    padding: 5,
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      color: subwayColor[value.subwayRouteName],
+                                    }}
+                                  >
+                                    {value.subwayRouteName.includes("서울")
+                                      ? value.subwayRouteName[3]
+                                      : value.subwayRouteName}
+                                  </Text>
+                                </View>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })
+                      ) : (
+                        <View
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={{ color: "white" }}>
+                            * 지원하지 않는 역은 검색되지 않습니다. *
+                          </Text>
+                          <Text style={{ color: "white" }}>
+                            * 신림선 / 경강선 / 서해선 *
+                          </Text>
+                          <Text style={{ color: "white" }}>
+                            * 인천 도시철도 1호선 / 인천 도시철도 2호선 *
+                          </Text>
+                          <Text style={{ color: "white" }}>
+                            * 의정부 경전철 / 용인 경전철 / 김포 도시철도 *
+                          </Text>
+                        </View>
+                      )}
+                    </ScrollView>
+                    <MyButton
+                      onPress={saveStation}
+                      text="저장"
+                      style={{
+                        marginTop: 20,
+                      }}
+                    />
+                  </View>
+                ) : isWidgetSelected &&
+                  editWidget.current.attribute.attr_name === "위치 설정" ? (
+                  <View
+                    style={{ justifyContent: "center", alignItems: "center" }}
+                  >
+                    {indicatorVisible ? (
+                      <View>
+                        <Text style={{ color: "white", fontSize: 16 }}>
+                          GPS 정보를 받아와 설정을 완료하고 있습니다.
+                        </Text>
+                        <Text style={{ color: "white", fontSize: 16 }}>
+                          잠시만 기다려 주세요...
+                        </Text>
+                      </View>
+                    ) : (
+                      <View>
+                        <Text style={{ color: "white", fontSize: 18 }}>
+                          설정이 완료되었습니다!
+                        </Text>
+                        <Text
+                          style={{
+                            color: "white",
+                            fontSize: 18,
+                            alignSelf: "center",
+                          }}
+                        >
+                          현재 위치:{" "}
+                          {
+                            loadedWidget[editWidget.current.key].attribute
+                              .attr_member.city
+                          }
+                        </Text>
+                        <MyButton
+                          style={{ backgroundColor: "white" }}
+                          text="닫기"
+                        />
+                      </View>
+                    )}
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          </Modal>
           <View
             style={{
               flex: 1,
@@ -586,17 +982,42 @@ function MainScreen({ navigation, route }) {
               >
                 {editWidget.current.module_name}
               </Text>
-              {Object.keys(editWidget.current).length !== 0 &&
-              editWidget.current.attribute.attr_name ? (
+              {isWidgetSelected && editWidget.current.attribute.main ? (
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                    marginBottom: 20,
+                  }}
+                >
+                  {editWidget.current.attribute.main}
+                </Text>
+              ) : null}
+              {isWidgetSelected && editWidget.current.attribute.attr_name ? (
                 <TouchableOpacity
                   style={{
                     ...styles.widgetControllButton,
                     backgroundColor: "aliceblue",
                   }}
                   onPress={() => {
-                    setPreviewVisible(!previewVisible);
-                    setSettingVisible(!settingVisible);
-                    editWidgetAttribute(editWidget.current.attribute.attr_name);
+                    // setPreviewVisible(!previewVisible);
+                    // setSettingVisible(!settingVisible);
+                    // editWidgetAttribute(editWidget.current.attribute.attr_name);
+                    const currentFuncName =
+                      editWidget.current.attribute.attr_name;
+                    currentFuncName === "ToDo list 편집"
+                      ? null
+                      : setAttributeVisible(!attributeVisible);
+                    if (currentFuncName === "위치 설정") {
+                      getLocation();
+                    } else if (currentFuncName === "ToDo list 편집") {
+                      navigation.navigate("ToDos", {
+                        username: route.params.username,
+                      });
+                      setPreviewVisible(!previewVisible);
+                      setSettingVisible(!settingVisible);
+                    }
                   }}
                 >
                   <Text style={styles.widgetControllText}>
@@ -947,6 +1368,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  stationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "white",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderWidth: 3,
   },
 });
 
