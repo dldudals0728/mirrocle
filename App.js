@@ -32,10 +32,10 @@ const App = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* <Stack.Screen name="Loading" component={Loading} />
         <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="FindAccount" component={FindAccount} /> */}
+        <Stack.Screen name="FindAccount" component={FindAccount} />
         <Stack.Screen name="ConnectMirrocle" component={ConnectMirrocle} />
         <Stack.Screen name="QRCodeScanner" component={QRCodeScanner} />
-        <Stack.Screen name="SignIn" component={SignIn} />
+        <Stack.Screen name="SignIn" component={SignIn} /> */}
         <Stack.Screen name="UserList" component={UserList} />
         <Stack.Screen name="MirrocleSettings" component={MirrocleSettings} />
         <Stack.Screen name="AddUser" component={AddUser} />

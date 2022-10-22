@@ -34,22 +34,22 @@ const CONTAINER_HORIZONTAL_PADDING = 10;
 const AnimatedBox = Animated.createAnimatedComponent(View);
 const OS = Platform.OS;
 
-const subwayColor = {
-  "서울 1호선": "#0052A4",
-  "서울 2호선": "#009D3E",
-  "서울 3호선": "#EF7C1C",
-  "서울 4호선": "#00A5DE",
-  "서울 5호선": "#996CAC",
-  "서울 6호선": "#CD7C2F",
-  "서울 7호선": "#BDB092",
-  "서울 8호선": "#EA545D",
-  "서울 9호선": "#BDB092",
-  우이신설: "#B0CE18",
-  경춘: "#0C8E72",
-  경의중앙: "#77C4A3",
-  수인분당: "#F5A200",
-  신분당: "#D4003B",
-  공항: "#0090D2",
+const subwayOption = {
+  "01호선": { color: "#0052A4", description: "1" },
+  "02호선": { color: "#009D3E", description: "2" },
+  "03호선": { color: "#EF7C1C", description: "3" },
+  "04호선": { color: "#00A5DE", description: "4" },
+  "05호선": { color: "#996CAC", description: "5" },
+  "06호선": { color: "#CD7C2F", description: "6" },
+  "07호선": { color: "#BDB092", description: "7" },
+  "08호선": { color: "#EA545D", description: "8" },
+  "09호선": { color: "#BDB092", description: "9" },
+  우이신설경전철: { color: "#B0CE18", description: "우이신설" },
+  경춘선: { color: "#0C8E72", description: "경춘" },
+  경의선: { color: "#77C4A3", description: "경의중앙" },
+  수인분당선: { color: "#F5A200", description: "수인분당" },
+  신분당선: { color: "#D4003B", description: "신분당" },
+  공항철도: { color: "#0090D2", description: "공항" },
 };
 
 function MainScreen({ navigation, route }) {
@@ -80,8 +80,11 @@ function MainScreen({ navigation, route }) {
     subwayStationId: "",
   });
 
-  const [stationName, setStationName] = useState("");
-  const [stationList, setStationList] = useState([]);
+  const [subwayStationName, setSubwayStationName] = useState("");
+  const [subwayStationList, setSubwayStationList] = useState([]);
+
+  const [busRouteNumber, setBusRouteNumber] = useState("");
+  // const []
 
   const getLocation = async () => {
     setIndicatorVisible((prev) => !prev);
@@ -121,7 +124,7 @@ function MainScreen({ navigation, route }) {
   };
 
   const getStation = async () => {
-    if (stationName === "") {
+    if (subwayStationName === "") {
       Alert.alert("검색어 오류", "검색어를 입력해주세요.", [
         {
           text: "OK",
@@ -131,20 +134,20 @@ function MainScreen({ navigation, route }) {
     }
     setIndicatorVisible(true);
     const API = API_KEYS.seoulSubwayStationInfo;
-    const url = `http://apis.data.go.kr/1613000/SubwayInfoService/getKwrdFndSubwaySttnList?serviceKey=${API}&pageNo=${"1"}&numOfRows=${"1000"}&_type=${"json"}&subwayStationName=${encodeURIComponent(
-      stationName
-    )}`;
+    // const url = `http://apis.data.go.kr/1613000/SubwayInfoService/getKwrdFndSubwaySttnList?serviceKey=${API}&pageNo=${"1"}&numOfRows=${"1000"}&_type=${"json"}&subwayStationName=${encodeURIComponent(
+    //   subwayStationName
+    // )}`;
+    const url = `http://openapi.seoul.go.kr:8088/${API}/json/SearchSTNBySubwayLineInfo/1/1000/${" "}/${subwayStationName}`;
     const res = await fetch(url);
     const json = await res.json();
-    const stationList = Array.isArray(json.response.body.items.item)
-      ? json.response.body.items.item
-      : json.response.body.items.item === undefined
-      ? []
-      : [json.response.body.items.item];
-    const supportedStationList = stationList.filter((station) => {
-      return Object.keys(subwayColor).includes(station.subwayRouteName);
+    // console.log(json.SearchSTNBySubwayLineInfo);
+    const subwayStationList = json.SearchSTNBySubwayLineInfo
+      ? json.SearchSTNBySubwayLineInfo.row
+      : [];
+    const supportedSubwayStationList = subwayStationList.filter((station) => {
+      return Object.keys(subwayOption).includes(station.LINE_NUM);
     });
-    setStationList(supportedStationList);
+    setSubwayStationList(supportedSubwayStationList);
     setIndicatorVisible(false);
   };
 
@@ -316,6 +319,21 @@ function MainScreen({ navigation, route }) {
           main: "",
           attr_name: "ToDo list 편집",
           attr_member: {},
+        },
+      },
+      4: {
+        key: "4",
+        coordinate: { x: 0, y: 2 },
+        module_name: "교통정보(버스)",
+        size: { height: 1, width: 2 },
+        attribute: {
+          main: "",
+          attr_name: "내 주변 정류소 찾기",
+          attr_member: {
+            subwayStationName: "",
+            subwayRouteName: "",
+            subwayStationId: "",
+          },
         },
       },
     };
@@ -744,8 +762,8 @@ function MainScreen({ navigation, route }) {
                   >
                     <MyTextInput
                       placeholder="지하철 역 검색"
-                      value={stationName}
-                      onChangeText={setStationName}
+                      value={subwayStationName}
+                      onChangeText={setSubwayStationName}
                       returnKeyType="done"
                       onSubmitEditing={getStation}
                       style={{
@@ -759,7 +777,7 @@ function MainScreen({ navigation, route }) {
                         marginBottom: 5,
                         justifyContent: "center",
                         borderColor: station.subwayStationId
-                          ? subwayColor[station.subwayRouteName]
+                          ? subwayOption[station.subwayRouteName].color
                           : "black",
                       }}
                     >
@@ -778,15 +796,14 @@ function MainScreen({ navigation, route }) {
                           </Text>
                           <View
                             style={{
-                              width: station.subwayRouteName.includes("서울")
-                                ? 30
-                                : null,
-                              height: station.subwayRouteName.includes("서울")
-                                ? 30
-                                : null,
+                              width:
+                                station.subwayRouteName[0] === "0" ? 30 : null,
+                              height:
+                                station.subwayRouteName[0] === "0" ? 30 : null,
                               borderRadius: 15,
                               borderWidth: 3,
-                              borderColor: subwayColor[station.subwayRouteName],
+                              borderColor:
+                                subwayOption[station.subwayRouteName].color,
                               justifyContent: "center",
                               alignItems: "center",
                               padding: 5,
@@ -794,11 +811,12 @@ function MainScreen({ navigation, route }) {
                           >
                             <Text
                               style={{
-                                color: subwayColor[station.subwayRouteName],
+                                color:
+                                  subwayOption[station.subwayRouteName].color,
                               }}
                             >
-                              {station.subwayRouteName.includes("서울")
-                                ? station.subwayRouteName[3]
+                              {station.subwayRouteName[0] === "0"
+                                ? station.subwayRouteName[1]
                                 : station.subwayRouteName}
                             </Text>
                           </View>
@@ -819,16 +837,16 @@ function MainScreen({ navigation, route }) {
                       }}
                     ></View>
                     <ScrollView showsVerticalScrollIndicator={false}>
-                      {stationList.length !== 0 ? (
-                        stationList.map((value, idx) => {
+                      {subwayStationList.length !== 0 ? (
+                        subwayStationList.map((value, idx) => {
                           return (
                             <TouchableOpacity
                               key={idx}
                               onPress={() => {
                                 const selectedStation = {
-                                  subwayStationName: value.subwayStationName,
-                                  subwayRouteName: value.subwayRouteName,
-                                  subwayStationId: value.subwayStationId,
+                                  subwayStationName: value.STATION_NM,
+                                  subwayRouteName: value.LINE_NUM,
+                                  subwayStationId: value.STATION_CD,
                                 };
                                 setStation(selectedStation);
                               }}
@@ -837,28 +855,22 @@ function MainScreen({ navigation, route }) {
                                 style={{
                                   ...styles.stationContainer,
                                   borderColor:
-                                    subwayColor[value.subwayRouteName],
+                                    subwayOption[value.LINE_NUM].color,
                                 }}
                               >
                                 <Text style={{ fontSize: 16 }}>
-                                  {value.subwayStationName}
+                                  {value.STATION_NM}
                                 </Text>
                                 <View
                                   style={{
-                                    width: value.subwayRouteName.includes(
-                                      "서울"
-                                    )
-                                      ? 30
-                                      : null,
-                                    height: value.subwayRouteName.includes(
-                                      "서울"
-                                    )
-                                      ? 30
-                                      : null,
+                                    width:
+                                      value.LINE_NUM[0] === "0" ? 30 : null,
+                                    height:
+                                      value.LINE_NUM[0] === "0" ? 30 : null,
                                     borderRadius: 15,
                                     borderWidth: 3,
                                     borderColor:
-                                      subwayColor[value.subwayRouteName],
+                                      subwayOption[value.LINE_NUM].color,
                                     justifyContent: "center",
                                     alignItems: "center",
                                     padding: 5,
@@ -866,12 +878,12 @@ function MainScreen({ navigation, route }) {
                                 >
                                   <Text
                                     style={{
-                                      color: subwayColor[value.subwayRouteName],
+                                      color: subwayOption[value.LINE_NUM].color,
                                     }}
                                   >
-                                    {value.subwayRouteName.includes("서울")
-                                      ? value.subwayRouteName[3]
-                                      : value.subwayRouteName}
+                                    {value.LINE_NUM[0] === "0"
+                                      ? value.LINE_NUM[1]
+                                      : value.LINE_NUM}
                                   </Text>
                                 </View>
                               </View>

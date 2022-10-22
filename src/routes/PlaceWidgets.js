@@ -414,6 +414,21 @@ function PlaceWidgets({ navigation, route }) {
         {
           text: "OK",
           onPress: () => {
+            const saveMethod = async () => {
+              const url = `http://mirror-env.eba-pjjtmgim.ap-northeast-2.elasticbeanstalk.com/user/template?accountIdx=3&userId=me&userTemplate=${JSON.stringify(
+                widgetList
+              )}`;
+              const res = await fetch(url, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  widgetList,
+                }),
+              });
+            };
+            saveMethod();
             Alert.alert("완료", "위젯이 성공적으로 배치되었습니다.", [
               {
                 text: "OK",
