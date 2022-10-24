@@ -611,6 +611,35 @@ encodeURIComponent("한글 데이터");
 data.go.kr에서 사용하라고 한 방법이긴 한데... 왜 react에서는 encodeURIComponent 함수 없이도 됐는데 왜 react-native는 안된다는 것인가.<br>
 22.10.19 22:56 기준으로 문의사항으로 넣어놨다.
 
+## Back End 연동 시 에러: PUT
+
+```
+ERROR There was a problem sending log messages to your development environment [PrettyFormatPluginError: value.hasOwnProperty is not a function. (In 'value.hasOwnProperty('tag')', 'value.hasOwnProperty' is undefined)]
+```
+
+다음과 같은 에러가 뜨는 경우가 있다.
+
+```JS
+let url = `${IP_ADDRESS}/user/create`;
+url += `?userId=${username}&accountIdx=${accountIdx}&userImage=${iconKey}`;
+const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+    "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+    userId: username,
+    accountIdx: accountIdx,
+    userImage: iconKey,
+    }),
+});
+
+// 여기가 Error를 뱉는다!
+console.log(res);
+```
+
+지금 코드를 보면 PUT 메서드로 값을 보낸다. 그러나 Back End 단에서 PUT으로 받는 /user/create 컨트롤러에서 return 값이 없기 때문에 console.log()시에 에러가 나타나는 것!!
+
 # Back-End
 
 ## React Native & spring boot 연동 basic

@@ -20,41 +20,35 @@ function FindAccount({ navigation, route }) {
 
   async function selectIdWithServer() {
     let url = `${IP_ADDRESS}/account/idfind`;
-    url += `?pw=${"232323"}&name=${name}&email=${email}`;
+    url += `?name=${name}&email=${email}`;
     // GET 형식은 header와 body 넣으면 X: TypeError: Body not allowed for GET or HEAD requests
     const selectedId = await fetch(url);
-    console.log("selectedId:", selectedId);
-    return selectedId;
+    const json = await selectedId.json();
+    console.log("selectedId:", json);
+    return json;
   }
 
   async function selectPwdWIthSever() {
-    // let url = "http://" + IP_ADDRESS + ":8080/mirrocle/login";
-    // url += `?accountID=${userId}&accountPwd=${userPwd}`;
-    // const res = await fetch(url).catch((error) => console.log(error));
-    let url = `${IP_ADDRESS}/account/login`;
-    url += `?id=${userId}&pw=${userPwd}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: userId,
-        pw: userPwd,
-      }),
-    });
-    const loginCode = await res.json();
-    return loginCode;
+    let url = `${IP_ADDRESS}/account/pwfind`;
+    url += `?id=${id}&name=${name}&email=${email}`;
+    const selectedPwd = await fetch(url);
+    const json = await selectedPwd.json();
+    console.log(json);
+    return json;
   }
 
-  const findId = () => {
-    const findId = selectIdWithServer();
-    setMessage(`${name}님의 비밀번호는 "${findId}" 입니다.`);
+  const findId = async () => {
+    const findId = await selectIdWithServer();
+    if (findId.status === 200) {
+      setMessage(`${name}님의 비밀번호는 "${findId.Account_id}" 입니다.`);
+    } else {
+      setMessage("사용자 정보가 정확하지 않습니다!");
+    }
   };
-  const findPwd = () => {
-    if (name === "admin" && email === "admin@ac.kr" && id === "root") {
-      const findPwd = "1234";
-      setMessage(`${name}님의 비밀번호는 "${findPwd}" 입니다.`);
+  const findPwd = async () => {
+    const findPwd = await selectPwdWIthSever();
+    if (findPwd.status === 200) {
+      setMessage(`${name}님의 비밀번호는 "${findPwd.Account_pw}" 입니다.`);
     } else {
       setMessage("사용자 정보가 정확하지 않습니다!");
     }

@@ -53,6 +53,7 @@ const subwayOption = {
 };
 
 function MainScreen({ navigation, route }) {
+  const { accountIdx, userIdx, username } = route.params;
   const [isKeyboardShow, setIsKeyboardShow] = useState(false);
   const [indicatorVisible, setIndicatorVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -116,7 +117,7 @@ function MainScreen({ navigation, route }) {
     temp[editWidget.current.key].attribute.attr_member.longitude = longitude;
     temp[
       editWidget.current.key
-    ].attribute.main = `${location[0].city} ${location[0].district}`;
+    ].attribute.detail = `${location[0].city} ${location[0].district}`;
 
     setLoadedWidget(temp);
     setIndicatorVisible((prev) => !prev);
@@ -188,7 +189,7 @@ function MainScreen({ navigation, route }) {
               ].attribute.attr_member.subwayStationId = station.subwayStationId;
               temp[
                 editWidget.current.key
-              ].attribute.main = `${station.subwayRouteName}\n${station.subwayStationName}`;
+              ].attribute.detail = `${station.subwayRouteName}\n${station.subwayStationName}`;
 
               setLoadedWidget(temp);
               setAttributeVisible(!attributeVisible);
@@ -225,26 +226,20 @@ function MainScreen({ navigation, route }) {
   };
 
   const loadWidgetFromDB = async () => {
-    // let url = "http://" + IP_ADDRESS + "/user/json";
-    // fetch(url)
-    //   .then((response) => {
-    //     response.json().then((result) => {
-    //       setLoadedWidget((prev) => {
-    //         return result;
-    //       });
-
-    //       console.log(result);
-    //       console.log(typeof result);
-    //     });
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
-    let url = IP_ADDRESS + "/user/json";
+    let url = IP_ADDRESS + "/user/select";
+    url += `?accountIdx=${accountIdx}&userIdx=${userIdx}`;
     const res = await fetch(url);
     const json = await res.json();
-    console.log("json:", json);
-    console.log(typeof json);
+    console.log("======== test ========");
+    console.log("json:", JSON.parse(json.user_template));
+    console.log(typeof JSON.parse(json.user_template));
+    console.log("======== test ========");
+    let loadedWidget;
+    if (json.status === 500) {
+      loadedWidget = {};
+    } else {
+      loadedWidget = JSON.parse(json.user_template);
+    }
     // const tempWidget = [
     //   {
     //     coordinate: { x: 0, y: 0 },
@@ -275,7 +270,7 @@ function MainScreen({ navigation, route }) {
         module_name: "시계",
         size: { height: 2, width: 2 },
         attribute: {
-          main: "",
+          detail: "",
           attr_name: "",
           attr_member: {},
         },
@@ -286,7 +281,7 @@ function MainScreen({ navigation, route }) {
         module_name: "날씨",
         size: { height: 1, width: 1 },
         attribute: {
-          main: "",
+          detail: "",
           attr_name: "위치 설정",
           attr_member: {
             latitude: 0,
@@ -301,7 +296,7 @@ function MainScreen({ navigation, route }) {
         module_name: "교통정보(지하철)",
         size: { height: 3, width: 2 },
         attribute: {
-          main: "",
+          detail: "",
           attr_name: "지하철 역 선택",
           attr_member: {
             subwayStationName: "",
@@ -316,9 +311,11 @@ function MainScreen({ navigation, route }) {
         module_name: "ToDo",
         size: { height: 1, width: 3 },
         attribute: {
-          main: "",
+          detail: "",
           attr_name: "ToDo list 편집",
-          attr_member: {},
+          attr_member: {
+            toDos: [],
+          },
         },
       },
       4: {
@@ -327,7 +324,7 @@ function MainScreen({ navigation, route }) {
         module_name: "교통정보(버스)",
         size: { height: 1, width: 2 },
         attribute: {
-          main: "",
+          detail: "",
           attr_name: "내 주변 정류소 찾기",
           attr_member: {
             subwayStationName: "",
@@ -337,7 +334,7 @@ function MainScreen({ navigation, route }) {
         },
       },
     };
-    setLoadedWidget(tempWidget);
+    setLoadedWidget(loadedWidget);
   };
 
   const keyboardShow = () => setIsKeyboardShow((prev) => !prev);
@@ -576,6 +573,9 @@ function MainScreen({ navigation, route }) {
                               },
                               theme: selectedWidget.theme,
                               icon: selectedWidget.icon,
+                              accountIdx,
+                              userIdx,
+                              username,
                             });
                           }}
                         >
@@ -994,7 +994,7 @@ function MainScreen({ navigation, route }) {
               >
                 {editWidget.current.module_name}
               </Text>
-              {isWidgetSelected && editWidget.current.attribute.main ? (
+              {isWidgetSelected && editWidget.current.attribute.detail ? (
                 <Text
                   style={{
                     color: "white",
@@ -1003,7 +1003,7 @@ function MainScreen({ navigation, route }) {
                     marginBottom: 20,
                   }}
                 >
-                  {editWidget.current.attribute.main}
+                  {editWidget.current.attribute.detail}
                 </Text>
               ) : null}
               {isWidgetSelected && editWidget.current.attribute.attr_name ? (
@@ -1060,6 +1060,9 @@ function MainScreen({ navigation, route }) {
                     // icon: editWidget.current.icon,
                     edit: true,
                     key: editWidget.current.key,
+                    accountIdx,
+                    userIdx,
+                    username,
                   });
                 }}
               >
@@ -1195,7 +1198,7 @@ function MainScreen({ navigation, route }) {
       <View style={styles.header}>
         <Logo imageSize={40} titleSize={15} subTextSize={8} />
         <View>
-          <Text style={styles.username}>{route.params.username}</Text>
+          <Text style={styles.username}>{username}</Text>
         </View>
       </View>
       <TouchableWithoutFeedback

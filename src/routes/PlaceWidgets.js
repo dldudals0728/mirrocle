@@ -25,8 +25,7 @@ const GRID_MARGIN_TOP = 40;
 const GRID_MARGIN_BOTTOM = 120;
 
 function PlaceWidgets({ navigation, route }) {
-  const { size } = route.params;
-  console.log(size);
+  const { accountIdx, userIdx, username } = route.params;
   BackHandler.addEventListener("hardwareBackPress", () => true);
   const isEdit = route.params.edit === true ? true : false;
   const widgetSizeRef = useRef({ width: 0, height: 0 });
@@ -85,7 +84,11 @@ function PlaceWidgets({ navigation, route }) {
         coordinate: { x: 0, y: 0 },
         module_name: "시계",
         size: { height: 2, width: 2 },
-        attribute: {},
+        attribute: {
+          main: "",
+          attr_name: "",
+          attr_member: {},
+        },
       },
       1: {
         key: "1",
@@ -93,16 +96,28 @@ function PlaceWidgets({ navigation, route }) {
         module_name: "날씨",
         size: { height: 1, width: 1 },
         attribute: {
+          main: "",
           attr_name: "위치 설정",
+          attr_member: {
+            latitude: 0,
+            longitude: 0,
+            city: "",
+          },
         },
       },
       2: {
         key: "2",
         coordinate: { x: 3, y: 4 },
-        module_name: "교통정보",
+        module_name: "교통정보(지하철)",
         size: { height: 3, width: 2 },
         attribute: {
-          attr_name: "위치 설정",
+          main: "",
+          attr_name: "지하철 역 선택",
+          attr_member: {
+            subwayStationName: "",
+            subwayRouteName: "",
+            subwayStationId: "",
+          },
         },
       },
       3: {
@@ -111,7 +126,24 @@ function PlaceWidgets({ navigation, route }) {
         module_name: "ToDo",
         size: { height: 1, width: 3 },
         attribute: {
+          main: "",
           attr_name: "ToDo list 편집",
+          attr_member: {},
+        },
+      },
+      4: {
+        key: "4",
+        coordinate: { x: 0, y: 2 },
+        module_name: "교통정보(버스)",
+        size: { height: 1, width: 2 },
+        attribute: {
+          main: "",
+          attr_name: "내 주변 정류소 찾기",
+          attr_member: {
+            subwayStationName: "",
+            subwayRouteName: "",
+            subwayStationId: "",
+          },
         },
       },
     };
@@ -414,17 +446,19 @@ function PlaceWidgets({ navigation, route }) {
         {
           text: "OK",
           onPress: () => {
+            const saveWidget = { ...widgetList };
             const saveMethod = async () => {
-              const url = `http://mirror-env.eba-pjjtmgim.ap-northeast-2.elasticbeanstalk.com/user/template?accountIdx=3&userId=me&userTemplate=${JSON.stringify(
-                widgetList
+              let url = IP_ADDRESS + "/user/template";
+              url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
+                saveWidget
               )}`;
-              const res = await fetch(url, {
+              await fetch(url, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  widgetList,
+                  saveWidget,
                 }),
               });
             };
@@ -434,7 +468,11 @@ function PlaceWidgets({ navigation, route }) {
                 text: "OK",
               },
             ]);
-            navigation.pop();
+            navigation.navigate("MainScreen", {
+              accountIdx,
+              userIdx,
+              username,
+            });
           },
         },
       ]);

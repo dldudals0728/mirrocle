@@ -14,12 +14,14 @@ import {
 } from "react-native";
 import { theme } from "../../colors";
 import { Icons } from "../../icons";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 import { MyButton } from "../components/MyButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ICON_BOX_LENGTH = parseInt(Object.keys(Icons).length / 4 + 1);
 
-function AddUser({ navigation }) {
+function AddUser({ navigation, route }) {
+  const { accountIdx } = route.params;
   const [isfromedit, setIsFromEdit] = useState();
   const [username, setUsername] = useState("");
   const iconBox = [];
@@ -29,17 +31,52 @@ function AddUser({ navigation }) {
   const [selectedIcon, setSelectedIcon] = useState(
     require("../images/userIcon-1.png")
   );
-  const addUser = () => {
+  const [iconKey, setIconKey] = useState("");
+
+  const addUserWithServer = async () => {
+    let url = `${IP_ADDRESS}/user/create`;
+    url += `?userId=${username}&accountIdx=${accountIdx}&userImage=${iconKey}`;
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: username,
+        accountIdx: accountIdx,
+        userImage: iconKey,
+      }),
+    });
+  };
+
+  const addUser = async () => {
     if (username === "") {
       Alert.alert("유저 이름 입력", "사용자의 이름을 설정해주세요.", [
         {
           text: "OK",
         },
       ]);
+      return;
     }
     /**
      * @todo 해당 유저를 계정에 연결시킨다.
      */
+    await addUserWithServer();
+    Alert.alert("사용자 생성", "사용자가 생성되었습니다.", [
+      {
+        text: "OK",
+      },
+    ]);
+    navigation.reset({
+      routes: [
+        {
+          name: "UserList",
+          params: {
+            accountIdx,
+          },
+        },
+      ],
+    });
   };
   const checkroute = () => {
     const route = navigation.getState().routes;
@@ -51,6 +88,8 @@ function AddUser({ navigation }) {
     }
   };
   useEffect(checkroute, []);
+
+  useEffect(() => console.log(iconKey), [iconKey]);
 
   return (
     <View style={styles.container}>
@@ -77,18 +116,19 @@ function AddUser({ navigation }) {
           {/** 정리 필요! */}
           {iconBox.map((value, idx) => (
             <View key={idx} style={styles.iconPages}>
-              {Object.values(Icons).map((icon, idx) =>
-                Math.ceil(icon.idx / 4) >= value &&
-                Math.ceil(icon.idx / 4) < value + 1 ? (
+              {Object.keys(Icons).map((iconKey, idx) =>
+                Math.ceil(Icons[iconKey].idx / 4) >= value &&
+                Math.ceil(Icons[iconKey].idx / 4) < value + 1 ? (
                   <TouchableWithoutFeedback
                     key={idx}
                     onPress={() => {
-                      setSelectedIcon(icon.src);
+                      setSelectedIcon(Icons[iconKey].src);
+                      setIconKey(iconKey);
                     }}
                   >
                     <Image
                       style={{ width: 50, height: 50 }}
-                      source={icon.src}
+                      source={Icons[iconKey].src}
                     />
                   </TouchableWithoutFeedback>
                 ) : null
@@ -100,7 +140,7 @@ function AddUser({ navigation }) {
       <MyButton
         style={{ marginTop: 20 }}
         text={isfromedit ? "수정완료" : "추가"}
-        onPress={() => console.log("hi")}
+        onPress={addUser}
       />
       <TouchableOpacity>
         <View

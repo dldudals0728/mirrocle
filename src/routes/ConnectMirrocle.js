@@ -14,12 +14,12 @@ import { MyTextInput } from "../components/MyTextInput";
 
 function ConnectMirrocle({ navigation, route }) {
   const [mirrorNumber, setMirrorNumber] = useState("");
-  useEffect(() => {
-    if (route.params) {
-      setMirrorNumber(route.params.SN);
-      connect();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (route.params) {
+  //     setMirrorNumber(route.params.SN);
+  //     connect();
+  //   }
+  // }, []);
   const scanQRCode = () => navigation.navigate("QRCodeScanner");
   const connect = () => {
     /**

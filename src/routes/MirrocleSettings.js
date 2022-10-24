@@ -3,7 +3,9 @@ import { theme } from "../../colors";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 
-function MirrocleSettings({ navigation }) {
+function MirrocleSettings({ navigation, route }) {
+  const { accountIdx } = route.params;
+
   return (
     <View style={styles.container}>
       <View style={{ alignItems: "flex-start", marginBottom: 20 }}>
@@ -17,7 +19,7 @@ function MirrocleSettings({ navigation }) {
         <MyButton text="Mirrocle 시간 설정" />
         <MyButton
           text="사용자 관리"
-          onPress={() => navigation.navigate("UserEdit")}
+          onPress={() => navigation.navigate("UserEdit", { accountIdx })}
         />
         <View style={styles.setting}>
           <Text style={styles.title}>Mirrocle S/N</Text>

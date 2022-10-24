@@ -8,12 +8,14 @@ import {
   Dimensions,
   Image,
 } from "react-native";
+import { useEffect, useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { Fontisto } from "@expo/vector-icons";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
 import { Icons } from "../../icons";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -22,52 +24,52 @@ function UserList({ navigation, route }) {
    * @todo 유저 정보를 수정할 수 있도록 버튼 또는 네비게이션 제공
    * @todo 등록된 프리셋이 없다 ? (프리셋을 등록해 보세요 alert; AddUser) : null
    */
+  console.log("IN user list");
   console.log(route.params);
 
+  // const accountIdx = route.params.accountIdx;
+  // console.log(accountIdx);
+  const { accountIdx } = route.params;
+  console.log(accountIdx);
+
   const userColList = [0, 0];
-  const userMaxList = [
-    { userIdx: 0, userName: "Root", userImage: "icon__1", userAPI: "" },
-    { userIdx: 1, userName: "admin", userImage: "icon__2", userAPI: "" },
-    { userIdx: null },
-    { userIdx: null },
-  ];
+  const [userList, setUserList] = useState([]);
+
+  useEffect(() => {
+    console.log("useEffect, [] running");
+    getUserListFromServer();
+  }, []);
 
   async function getUserListFromServer() {
-    let url = `${IP_ADDRESS}/user/login`;
-    url += `?id=${userId}&pw=${userPwd}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: userId,
-        pw: userPwd,
-      }),
-    });
-    const loginInfo = await res.json();
-    console.log(loginInfo);
-    return loginInfo;
+    /**
+     * userIdx, userId, userImg, userTemplate, accountIdx
+     */
+    let url = `${IP_ADDRESS}/user/allselect`;
+    url += `?accountIdx=${accountIdx}`;
+    const res = await fetch(url);
+    const userList = await res.json();
+    console.log(userList);
+    const newUserList = [...userList];
+    for (let i = newUserList.length; i < 4; i++) {
+      newUserList.push({
+        userIdx: null,
+      });
+    }
+    console.log(newUserList);
+    setUserList(newUserList);
   }
 
   const gotoUser = (username, userIdx) => {
     navigation.navigate("MainScreen", {
-      username,
+      accountIdx,
       userIdx,
+      username,
     });
   };
   const addUser = () => {
-    Alert.alert("add user", "Do you want add user?", [
-      {
-        text: "cancel",
-      },
-      {
-        text: "I'm Sure",
-        onPress: () => {
-          navigation.navigate("AddUser");
-        },
-      },
-    ]);
+    navigation.navigate("AddUser", {
+      accountIdx,
+    });
   };
   const payUser = () => {
     Alert.alert("pay for additional user", "Do you want pay for add user?", [
@@ -91,7 +93,7 @@ function UserList({ navigation, route }) {
       <Logo titleSize={30} style={styles.logoStyle} />
       <View style={styles.userContainer}>
         {userColList.map((value, idx) => {
-          const colList = userMaxList.slice(idx * 2, idx * 2 + 2);
+          const colList = userList.slice(idx * 2, idx * 2 + 2);
           return (
             <View style={styles.userContainer__col} key={idx}>
               {colList.map((value, idx) => {
@@ -103,7 +105,7 @@ function UserList({ navigation, route }) {
                       if (isNull) {
                         addUser();
                       } else {
-                        gotoUser(value.userName, value.userIdx);
+                        gotoUser(value.userId, value.userIdx);
                       }
                     }}
                     key={idx}
@@ -130,7 +132,7 @@ function UserList({ navigation, route }) {
                         />
                       )}
                       {isNull ? null : (
-                        <Text style={styles.userText}>{value.userName}</Text>
+                        <Text style={styles.userText}>{value.userId}</Text>
                       )}
                     </View>
                   </TouchableWithoutFeedback>
@@ -173,7 +175,9 @@ function UserList({ navigation, route }) {
       <View style={{ width: "100%" }}>
         <MyButton
           text="Mirrocle Settings"
-          onPress={() => navigation.navigate("MirrocleSettings")}
+          onPress={() =>
+            navigation.navigate("MirrocleSettings", { accountIdx })
+          }
         />
       </View>
       <StatusBar style="auto" />

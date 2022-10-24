@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   Alert,
   Animated,
@@ -25,9 +25,29 @@ function ToDos({ navigation, route }) {
   const [calendarVisible, setCalendarVisible] = useState(false);
   const AnimRef = useRef([]);
 
-  /**
-   * @todo ToDo 삭제 애니메이션 넣기!
-   */
+  const urgentToDo = (key) => {
+    const newToDos = { ...toDos };
+    newToDos[key].isUrgent = !newToDos[key].isUrgent;
+    /**
+     * 모두 긴급 모드로 하는 도중 마지막꺼를 했을 때 에러
+     */
+    // if (key !== Object.keys(toDos)[0]) {
+    //   let minKey = 0;
+    //   for (toDoKey in newToDos) {
+    //     if (!newToDos[toDoKey].isUrgent) {
+    //       minKey = toDoKey;
+    //       break;
+    //     }
+    //   }
+    //   const tempToDo = newToDos[minKey];
+    //   newToDos[minKey] = newToDos[key];
+    //   newToDos[key] = tempToDo;
+
+    //   console.log(tempToDo);
+    // }
+
+    setToDos(newToDos);
+  };
 
   const completeToDo = (key) => {
     const newToDos = { ...toDos };
@@ -47,6 +67,7 @@ function ToDos({ navigation, route }) {
       [Date.now()]: {
         text,
         isCompleted: false,
+        isUrgent: false,
         dueDate: Object.keys(toDos).length % 2 === 0 ? null : "2020년",
       },
     };
@@ -131,7 +152,13 @@ function ToDos({ navigation, route }) {
         {Object.keys(toDos).map((key, idx) => {
           return (
             <AnimatedBox key={key} style={{ opacity: AnimRef.current[idx] }}>
-              <View style={styles.toDo}>
+              <View
+                style={{
+                  ...styles.toDo,
+                  borderWidth: 1,
+                  borderColor: toDos[key].isUrgent ? "red" : null,
+                }}
+              >
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <TouchableOpacity onPress={() => completeToDo(key)}>
                     <MaterialCommunityIcons
@@ -160,6 +187,21 @@ function ToDos({ navigation, route }) {
                   </Text>
                 </View>
                 <View style={{ flexDirection: "row" }}>
+                  <TouchableOpacity onPress={() => urgentToDo(key)}>
+                    <MaterialCommunityIcons
+                      name={
+                        toDos[key].isUrgent
+                          ? "alarm-light"
+                          : "alarm-light-outline"
+                      }
+                      style={{
+                        ...styles.toDoText,
+                        fontSize: 28,
+                        marginRight: 12,
+                        color: toDos[key].isUrgent ? "red" : "#808080",
+                      }}
+                    />
+                  </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setCalendarVisible(!calendarVisible)}
                   >
@@ -210,7 +252,7 @@ function ToDos({ navigation, route }) {
         textStyle={{ color: "white" }}
         onPress={saveToDos}
       />
-      <StatusBar style="light" />
+      <StatusBar style="auto" />
     </View>
   );
 }

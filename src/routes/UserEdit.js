@@ -6,99 +6,129 @@ import {
   Dimensions,
   TouchableOpacity,
   Image,
+  Alert,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
+import { Icons } from "../../icons";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
-function UserEdit({ navigation }) {
-  const deleteUser = () => {
-    /**
-     * @todo DB와 연동해서 해당 user 계정 레코드 삭제
-     */
-    console.log("ㅎㅇ");
+function UserEdit({ navigation, route }) {
+  const { accountIdx } = route.params;
+  const [userList, setUserList] = useState([]);
+
+  const getUserList = async () => {
+    let url = `${IP_ADDRESS}/user/allselect`;
+    url += `?accountIdx=${accountIdx}`;
+    const res = await fetch(url);
+    const userList = await res.json();
+    const newUserList = [...userList];
+    for (let i = newUserList.length; i < 4; i++) {
+      newUserList.push({
+        userIdx: null,
+      });
+    }
+    setUserList(newUserList);
   };
+
+  const deleteUserWithServer = async (userIdx) => {
+    let url = `${IP_ADDRESS}/user/delete`;
+    url += `?accountIdx=${accountIdx}&userIdx=${userIdx}`;
+    await fetch(url, {
+      method: "DELETE",
+    });
+  };
+
+  const editUser = (idx) => {
+    const user = userList[idx];
+    navigation.navigate("AddUser", { user });
+  };
+  const deleteUser = (idx) => {
+    Alert.alert("사용자 삭제", "선택한 사용자를 삭제하시겠습니까?", [
+      {
+        text: "cancel",
+      },
+      {
+        text: "OK",
+        onPress: () => {
+          deleteUserWithServer(userList[idx].userIdx);
+          const newUserList = [...userList];
+          delete newUserList[idx];
+          newUserList.push({ userIdx: null });
+          setUserList(newUserList);
+          Alert.alert("완료", "사용자가 삭제되었습니다.", [
+            {
+              text: "OK",
+            },
+          ]);
+        },
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    getUserList();
+  }, []);
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
       <Logo titleSize={30} style={styles.logoStyle} />
       <View style={styles.list_container}>
-        <View style={styles.user}>
-          <Image
-            style={styles.userlogo}
-            source={require("../images/userIcon-1.png")}
-          />
-          <Text style={styles.username}>user1</Text>
-          <TouchableOpacity>
-            <Text
-              style={styles.btnstyle}
-              onPress={() => navigation.navigate("AddUser")}
+        {userList.map((value, idx) =>
+          value.userIdx ? (
+            <View key={idx} style={styles.user}>
+              <Image
+                style={styles.userlogo}
+                source={Icons[value.userImage].src}
+              />
+              <Text style={styles.username}>{value.userId}</Text>
+              <TouchableOpacity>
+                <Text style={styles.btnstyle} onPress={() => editUser(idx)}>
+                  수정
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text
+                  style={{
+                    ...styles.btnstyle,
+                    borderColor: "red",
+                    color: "red",
+                  }}
+                  onPress={() => deleteUser(idx)}
+                >
+                  삭제
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View
+              key={idx}
+              style={{ ...styles.user, backgroundColor: "#404040" }}
             >
-              수정
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text
-              style={{ ...styles.btnstyle, borderColor: "red", color: "red" }}
-              onPress={() => deleteUser()}
-            >
-              삭제
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.user}>
-          <Image
-            style={styles.userlogo}
-            source={require("../images/userIcon-2.png")}
-          />
-          <Text style={styles.username}>user2</Text>
-          <TouchableOpacity>
-            <Text
-              style={styles.btnstyle}
-              onPress={() => navigation.navigate("AddUser")}
-            >
-              수정
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text
-              style={{ ...styles.btnstyle, borderColor: "red", color: "red" }}
-              onPress={() => deleteUser()}
-            >
-              삭제
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.user}>
-          <Image
-            style={styles.userlogo}
-            source={require("../images/userIcon-3.png")}
-          />
-          <Text style={styles.username}>user3</Text>
-          <TouchableOpacity>
-            <Text
-              style={styles.btnstyle}
-              onPress={() => navigation.navigate("AddUser")}
-            >
-              수정
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text
-              style={{ ...styles.btnstyle, borderColor: "red", color: "red" }}
-              onPress={() => deleteUser()}
-            >
-              삭제
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Text style={{ fontSize: 18, fontWeight: "600", color: "white" }}>
+                사용자가 존재하지 않습니다!
+              </Text>
+            </View>
+          )
+        )}
       </View>
       <MyButton
         text="돌아가기"
         style={{ marginTop: 40 }}
         onPress={() => {
+          // navigation.reset({
+          //   routes: [
+          //     {
+          //       name: "UserList",
+          //       params: {
+          //         accountIdx,
+          //       },
+          //     },
+          //   ],
+          // });
           navigation.pop();
         }}
       />
@@ -129,7 +159,7 @@ const styles = StyleSheet.create({
     borderColor: "black",
     borderWidth: 2,
     borderRadius: 10,
-    backgroundColor: "gainsboro",
+    backgroundColor: "#F0F0F0",
   },
   userlogo: {
     width: "15%",
@@ -146,11 +176,15 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH / 8,
     borderStyle: "solid",
     borderColor: "black",
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: 10,
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: "600",
     marginHorizontal: 5,
     textAlign: "center",
+  },
+  empty: {
+    backgroundColor: "#808080",
   },
 });
 

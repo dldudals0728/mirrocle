@@ -27,9 +27,6 @@ function Login({ navigation }) {
     setUserPwd("");
   };
   async function loginWithServer() {
-    // let url = "http://" + IP_ADDRESS + ":8080/mirrocle/login";
-    // url += `?accountID=${userId}&accountPwd=${userPwd}`;
-    // const res = await fetch(url).catch((error) => console.log(error));
     let url = `${IP_ADDRESS}/account/login`;
     url += `?id=${userId}&pw=${userPwd}`;
     const res = await fetch(url, {
@@ -43,7 +40,6 @@ function Login({ navigation }) {
       }),
     });
     const loginInfo = await res.json();
-    console.log(loginInfo);
     return loginInfo;
   }
   const login = async () => {
@@ -63,10 +59,34 @@ function Login({ navigation }) {
        * @todo 계속 Promise로 반환하는데...
        */
       const loginInfo = await loginWithServer();
-      if (loginInfo.index) {
-        navigation.reset({
-          routes: [{ name: "UserList", params: loginInfo.index }],
-        });
+      if (loginInfo.status === 200) {
+        if (loginInfo.mirrorIdx) {
+          navigation.reset({
+            routes: [
+              {
+                name: "UserList",
+                params: {
+                  accountIdx: loginInfo.Account_idx,
+                  mirrorIdx: loginInfo.mirrorIdx,
+                },
+              },
+            ],
+          });
+        } else {
+          // navigation.reset({
+          //   routes: [{ name: "ConnectMirrocle", params: loginInfo }],
+          // });
+          navigation.reset({
+            routes: [
+              {
+                name: "UserList",
+                params: {
+                  accountIdx: loginInfo.Account_idx,
+                },
+              },
+            ],
+          });
+        }
         clearAll();
       } else {
         Alert.alert("로그인 실패", "아이디 혹은 비밀번호 오류입니다.", [
