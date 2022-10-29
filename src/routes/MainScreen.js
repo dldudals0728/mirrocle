@@ -21,13 +21,15 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "../components/Logo";
 import { theme } from "../../colors";
-import { widgetList, widgetSizeList } from "../../Widgets";
+import { widgetSizeList } from "../../Widgets";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
 import { MyTextInput } from "../components/MyTextInput";
 import { IP_ADDRESS } from "../../temp/IPAddress";
 import { API_KEYS } from "../../temp/API";
+import { widgets } from "../components/Widgets";
+import { useIsFocused } from "@react-navigation/native";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 10;
@@ -54,14 +56,31 @@ const subwayOption = {
 
 function MainScreen({ navigation, route }) {
   const { accountIdx, userIdx, username } = route.params;
+  console.log(route.params);
+  const isFocused = useIsFocused();
   const [isKeyboardShow, setIsKeyboardShow] = useState(false);
   const [indicatorVisible, setIndicatorVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [widgetListVisible, setWidgetListVisible] = useState(false);
   const [widgetDetailVisible, setWidgetDetailVisible] = useState(false);
-  const [selectedWidget, setSelectedWidget] = useState({});
+  const [selectedWidget, setSelectedWidget] = useState({
+    key: 0,
+    app: {
+      theme: "",
+      icon: "",
+    },
+    coordinate: { x: 0, y: 0 },
+    module_name: "",
+    size: { height: 0, width: 0 },
+    attribute: {
+      detail: "",
+      attr_name: "",
+      attr_member: {},
+    },
+  });
   const [loading, setLoading] = useState(true);
-  const [loadedWidget, setLoadedWidget] = useState({});
+  const [loadedWidget, setLoadedWidget] = useState([]);
+  const [widgetWrapper, setWidgetWrapper] = useState([]);
 
   const [previewVisible, setPreviewVisible] = useState(false);
   const [settingVisible, setSettingVisible] = useState(false);
@@ -121,7 +140,7 @@ function MainScreen({ navigation, route }) {
 
     setLoadedWidget(temp);
     setIndicatorVisible((prev) => !prev);
-    console.log("finish!");
+    saveWidgetWithServer(temp);
   };
 
   const getStation = async () => {
@@ -141,7 +160,6 @@ function MainScreen({ navigation, route }) {
     const url = `http://openapi.seoul.go.kr:8088/${API}/json/SearchSTNBySubwayLineInfo/1/1000/${" "}/${subwayStationName}`;
     const res = await fetch(url);
     const json = await res.json();
-    // console.log(json.SearchSTNBySubwayLineInfo);
     const subwayStationList = json.SearchSTNBySubwayLineInfo
       ? json.SearchSTNBySubwayLineInfo.row
       : [];
@@ -194,6 +212,14 @@ function MainScreen({ navigation, route }) {
               setLoadedWidget(temp);
               setAttributeVisible(!attributeVisible);
               setSettingVisible(!settingVisible);
+              setSubwayStationList([]);
+              setSubwayStationName("");
+              setStation({
+                subwayStationName: "",
+                subwayRouteName: "",
+                subwayStationId: "",
+              });
+              saveWidgetWithServer(temp);
             },
           },
         ]
@@ -201,8 +227,31 @@ function MainScreen({ navigation, route }) {
     }
   };
 
+  const setWidgetSize = (width, height) => {
+    setSelectedWidget((selectedWidget) => {
+      selectedWidget.size.width = width;
+      selectedWidget.size.height = height;
+      return selectedWidget;
+    });
+  };
+
+  const wrapWidgets = () => {
+    const widgetWrapper = [[]];
+    Object.keys(widgets).forEach((key, idx) => {
+      let lastIdx = widgetWrapper.length - 1;
+      if (widgetWrapper[lastIdx].length === 2) {
+        widgetWrapper.push([]);
+        lastIdx += 1;
+      }
+      widgetWrapper[lastIdx].push(widgets[key]);
+    });
+    setWidgetWrapper(widgetWrapper);
+  };
+
   const selectWidgetSetting = (widget) => {
-    editWidget.current = widget;
+    const tempWidget = { ...widget };
+    tempWidget.key = tempWidget.key.toString();
+    editWidget.current = tempWidget;
     !isWidgetSelected ? setIsWidgetSelected(true) : null;
     console.log("editWidget.current:", editWidget.current);
   };
@@ -213,33 +262,50 @@ function MainScreen({ navigation, route }) {
      */
     const newWidgetList = {};
     const widgetList = { ...loadedWidget };
+    console.log("widgetList", widgetList);
+    console.log("====================");
+    console.log("삭제되는 위젯");
+    console.log(widgetList[key]);
+    console.log("====================");
     delete widgetList[key];
     const arrayWidgetList = Object.values(widgetList);
     arrayWidgetList.forEach((value, idx) => {
       value.key = idx.toString();
       newWidgetList[parseInt(idx)] = value;
     });
-    console.log(widgetList);
-    console.log("==================");
-    console.log(newWidgetList);
+    setIsWidgetSelected(isWidgetSelected ? false : null);
     setLoadedWidget(newWidgetList);
+    saveWidgetWithServer(newWidgetList);
   };
 
-  const loadWidgetFromDB = async () => {
+  const saveWidgetWithServer = async (saveWidget) => {
+    let url = IP_ADDRESS + "/user/template";
+    url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
+      saveWidget
+    )}`;
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        saveWidget,
+      }),
+    });
+  };
+
+  const loadWidgetFromServer = async () => {
     let url = IP_ADDRESS + "/user/select";
     url += `?accountIdx=${accountIdx}&userIdx=${userIdx}`;
     const res = await fetch(url);
     const json = await res.json();
-    console.log("======== test ========");
-    console.log("json:", JSON.parse(json.user_template));
-    console.log(typeof JSON.parse(json.user_template));
-    console.log("======== test ========");
     let loadedWidget;
     if (json.status === 500) {
       loadedWidget = {};
     } else {
       loadedWidget = JSON.parse(json.user_template);
     }
+    console.log(loadedWidget);
     // const tempWidget = [
     //   {
     //     coordinate: { x: 0, y: 0 },
@@ -341,9 +407,13 @@ function MainScreen({ navigation, route }) {
   const keyboradHide = () => setIsKeyboardShow((prev) => !prev);
 
   useEffect(() => {
+    loadWidgetFromServer();
+  }, [isFocused]);
+
+  useEffect(() => {
     Keyboard.addListener("keyboardDidShow", keyboardShow);
     Keyboard.addListener("keyboardDidHide", keyboradHide);
-    loadWidgetFromDB();
+    wrapWidgets();
     setLoading((prev) => !prev);
     return () => setLoading((prev) => !prev);
   }, []);
@@ -379,19 +449,12 @@ function MainScreen({ navigation, route }) {
       //   listener: (event, gesture) => {},
       // }),
       onPanResponderMove: (event, gesture) => {
-        console.log(gesture);
         if (gesture.dy < 0) {
           return;
         }
         detailPosition.setValue({ x: 0, y: gesture.dy });
       },
       onPanResponderRelease: (event, gesture) => {
-        // console.log("========== event ==========");
-        // console.log(event);
-        // console.log("========== event ==========");
-        // console.log("========== event.nativeEvent ==========");
-        // console.log(event.nativeEvent);
-        // console.log("========== event.nativeEvent ==========");
         if (gesture.vy >= 3.5) {
           setWidgetDetailVisible((prev) => !prev);
           setTimeout(() => detailPosition.setValue({ x: 0, y: 0 }), 500);
@@ -525,7 +588,7 @@ function MainScreen({ navigation, route }) {
                 }}
               >
                 <Text style={{ fontSize: 26, color: "white" }}>
-                  {selectedWidget.message}
+                  {selectedWidget.module_name}
                 </Text>
               </View>
               <View style={{ flex: 5 }}>
@@ -561,33 +624,24 @@ function MainScreen({ navigation, route }) {
                           onPress={() => {
                             setWidgetListVisible(!widgetListVisible);
                             setWidgetDetailVisible(!widgetDetailVisible);
+                            setWidgetSize(width, height);
                             navigation.navigate("PlaceWidgets", {
-                              module_name: selectedWidget.message,
-                              size: {
-                                width: width,
-                                height: height,
-                              },
-                              coordinate: {
-                                x: 0,
-                                y: 0,
-                              },
-                              theme: selectedWidget.theme,
-                              icon: selectedWidget.icon,
+                              widget: selectedWidget,
                               accountIdx,
                               userIdx,
                               username,
                             });
                           }}
                         >
-                          {selectedWidget.theme == "Ionicons" ? (
+                          {selectedWidget.app.theme == "Ionicons" ? (
                             <Ionicons
-                              name={selectedWidget.icon}
+                              name={selectedWidget.app.icon}
                               size={80}
                               color="white"
                             />
                           ) : (
                             <Feather
-                              name={selectedWidget.icon}
+                              name={selectedWidget.app.icon}
                               size={80}
                               color="white"
                             />
@@ -645,7 +699,7 @@ function MainScreen({ navigation, route }) {
             bounces={false}
             overScrollMode="never"
           >
-            {widgetList.map((widgetRow, idx) => (
+            {widgetWrapper.map((widgetRow, idx) => (
               <View
                 key={idx}
                 style={{
@@ -677,13 +731,21 @@ function MainScreen({ navigation, route }) {
                         marginBottom: 10,
                       }}
                     >
-                      {widget.theme == "Ionicons" ? (
-                        <Ionicons name={widget.icon} size={80} color="white" />
+                      {widget.app.theme == "Ionicons" ? (
+                        <Ionicons
+                          name={widget.app.icon}
+                          size={80}
+                          color="white"
+                        />
                       ) : (
-                        <Feather name={widget.icon} size={80} color="white" />
+                        <Feather
+                          name={widget.app.icon}
+                          size={80}
+                          color="white"
+                        />
                       )}
                     </View>
-                    <Text style={{ color: "white" }}>{widget.message}</Text>
+                    <Text style={{ color: "white" }}>{widget.module_name}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -717,7 +779,6 @@ function MainScreen({ navigation, route }) {
                 backgroundColor: "transparent",
               }}
               onPress={() => {
-                console.log(isKeyboardShow);
                 if (isKeyboardShow) {
                   Keyboard.dismiss();
                 } else {
@@ -937,7 +998,7 @@ function MainScreen({ navigation, route }) {
                         </Text>
                       </View>
                     ) : (
-                      <View>
+                      <View style={{ marginBottom: 16 }}>
                         <Text style={{ color: "white", fontSize: 18 }}>
                           설정이 완료되었습니다!
                         </Text>
@@ -956,6 +1017,7 @@ function MainScreen({ navigation, route }) {
                         </Text>
                         <MyButton
                           style={{ backgroundColor: "white" }}
+                          onPress={() => setAttributeVisible(!attributeVisible)}
                           text="닫기"
                         />
                       </View>
@@ -1025,7 +1087,9 @@ function MainScreen({ navigation, route }) {
                       getLocation();
                     } else if (currentFuncName === "ToDo list 편집") {
                       navigation.navigate("ToDos", {
-                        username: route.params.username,
+                        username,
+                        accountIdx,
+                        userIdx,
                       });
                       setPreviewVisible(!previewVisible);
                       setSettingVisible(!settingVisible);
@@ -1045,24 +1109,12 @@ function MainScreen({ navigation, route }) {
                 onPress={() => {
                   setSettingVisible((prev) => !prev);
                   setPreviewVisible((prev) => !prev);
-                  console.log(editWidget.current);
                   navigation.navigate("PlaceWidgets", {
-                    module_name: editWidget.current.module_name,
-                    size: {
-                      width: editWidget.current.size.width,
-                      height: editWidget.current.size.height,
-                    },
-                    coordinate: {
-                      x: editWidget.current.coordinate.x,
-                      y: editWidget.current.coordinate.y,
-                    },
-                    // theme: editWidget.current.theme,
-                    // icon: editWidget.current.icon,
-                    edit: true,
-                    key: editWidget.current.key,
+                    widget: editWidget.current,
                     accountIdx,
                     userIdx,
                     username,
+                    edit: true,
                   });
                 }}
               >

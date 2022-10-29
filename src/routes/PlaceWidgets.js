@@ -25,35 +25,32 @@ const GRID_MARGIN_TOP = 40;
 const GRID_MARGIN_BOTTOM = 120;
 
 function PlaceWidgets({ navigation, route }) {
-  const { accountIdx, userIdx, username } = route.params;
+  const { accountIdx, userIdx, username, widget } = route.params;
+  console.log("Place Widgets => widget:", widget);
   BackHandler.addEventListener("hardwareBackPress", () => true);
   const isEdit = route.params.edit === true ? true : false;
   const widgetSizeRef = useRef({ width: 0, height: 0 });
   const [loading, setLoading] = useState(true);
   const [DBLoading, setDBLoading] = useState(false);
-  const [widgetList, setWidgetList] = useState([]);
+  const [widgetList, setWidgetList] = useState({});
   /**
    * @todo PanResponder에서 widgetList를 이용하려 했으나, 비동기로 인해 state가 바뀌기 전에 panResponder에서 참조하여
    *      값이 바뀌지 않은 상태로 저장됨. 이를 해결하기 위해 widgetListRef로 조작
    */
   const widgetListRef = useRef([]);
 
-  const loadWidgetFromDB = () => {
-    // let url = "http://" + IP_ADDRESS + ":8080/mirrocle/template";
-    // fetch(url)
-    //   .then((response) => {
-    //     response.json().then((result) => {
-    //       setWidgetList((prev) => {
-    //         return result;
-    //       });
-
-    //       console.log(result);
-    //       console.log(typeof result);
-    //     });
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
+  const loadWidgetFromServer = async () => {
+    let url = IP_ADDRESS + "/user/select";
+    url += `?accountIdx=${accountIdx}&userIdx=${userIdx}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    let loadedWidget;
+    if (json.status === 500) {
+      loadedWidget = {};
+    } else {
+      loadedWidget = JSON.parse(json.user_template);
+    }
+    console.log("loaded widget list:", loadedWidget);
 
     // const tempWidget = [
     //   {
@@ -149,20 +146,36 @@ function PlaceWidgets({ navigation, route }) {
     };
 
     if (isEdit) {
-      delete tempWidget[route.params.key];
+      delete loadedWidget[widget.key];
     }
-    setWidgetList(tempWidget);
+    setWidgetList(loadedWidget);
+  };
+
+  const saveWidgetWithServer = async (saveWidget) => {
+    let url = IP_ADDRESS + "/user/template";
+    url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
+      saveWidget
+    )}`;
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        saveWidget,
+      }),
+    });
   };
 
   useEffect(() => {
-    loadWidgetFromDB();
+    loadWidgetFromServer();
 
     setDBLoading((prev) => !prev);
     return () => setLoading((prev) => !prev);
   }, []);
 
-  const widgetRowCnt = route.params.size.width;
-  const widgetColCnt = route.params.size.height;
+  const widgetRowCnt = widget.size.width;
+  const widgetColCnt = widget.size.height;
 
   const gridWidth = Math.round(SCREEN_WIDTH / 5);
   const gridHeight = Math.round(
@@ -180,10 +193,9 @@ function PlaceWidgets({ navigation, route }) {
   const onLayoutGrid = (e) => {
     const layoutInfo = e.nativeEvent.layout;
 
-    widgetSizeRef.current.width =
-      (layoutInfo.width / 5) * route.params.size.width;
+    widgetSizeRef.current.width = (layoutInfo.width / 5) * widget.size.width;
     widgetSizeRef.current.height =
-      (layoutInfo.height / 10) * route.params.size.height;
+      (layoutInfo.height / 10) * widget.size.height;
 
     setLoading((prev) => !prev);
   };
@@ -193,17 +205,15 @@ function PlaceWidgets({ navigation, route }) {
      * @todo Animated가 언젠 되고 언젠 안되네
      */
     const x =
-      (widgetSizeRef.current.width / route.params.size.width) *
-      route.params.coordinate.x;
+      (widgetSizeRef.current.width / widget.size.width) * widget.coordinate.x;
     const y =
-      (widgetSizeRef.current.height / route.params.size.height) *
-      route.params.coordinate.y;
-    console.log(route.params.coordinate.x);
-    console.log(route.params.coordinate.y);
+      (widgetSizeRef.current.height / widget.size.height) * widget.coordinate.y;
+    console.log(widget.coordinate.x);
+    console.log(widget.coordinate.y);
     Animated.spring(position, {
       toValue: { x: x, y: y },
       useNativeDriver: false,
-    }).start(() => console.log("Animation is end!"));
+    }).start();
     // position.setValue({ x: x, y: y });
   };
 
@@ -233,9 +243,6 @@ function PlaceWidgets({ navigation, route }) {
        * @todo grid 2~4열에서 "터치" 시 position.x._value의 값이 확 튀어버리는 현상 발생: stopAnimation()으로 해결
        */
       onPanResponderRelease: (event, gesture) => {
-        console.log(gesture);
-        console.log("*** gridEndWidth:", gridEndWidth);
-        console.log("*** gridEndHeight:", gridEndHeight);
         let currentPosition = 0;
         // 터치 시 튀는 문제를 해결하니, 터치를 해제할 때 튀는 문제 발생 ==> 해결(원인: flattenOffset())
         if (gesture.dx === 0 && gesture.dy === 0) {
@@ -301,66 +308,10 @@ function PlaceWidgets({ navigation, route }) {
             break;
           }
         }
-        widgetListRef.current.map((widget, idx) => {
-          const loadedWidget = {
-            width: widget.size.width,
-            height: widget.size.height,
-            // left top x, y
-            x: widget.coordinate.x,
-            y: widget.coordinate.y,
-          };
-
-          const currentWidget = {
-            width: widgetRowCnt,
-            height: widgetColCnt,
-            // left top x, y
-            x: parseInt(Math.ceil(moveX) / widgetCellWidth),
-            y: parseInt(Math.ceil(moveY) / widgetCellHeight),
-          };
-
-          console.log("=============== start ================");
-          console.log("loadedWidget.x:", loadedWidget.x);
-          console.log("currentWidget.x:", currentWidget.x);
-          console.log("loadedWidget.y:", loadedWidget.y);
-          console.log("currentWidget.y:", currentWidget.y);
-          console.log("===============================");
-          console.log("loadedWidget.width:", loadedWidget.width);
-          console.log("currentWidget.width:", currentWidget.width);
-          console.log("loadedWidget.height:", loadedWidget.height);
-          console.log("currentWidget.height:", currentWidget.height);
-          console.log("=============== end ================");
-
-          if (
-            loadedWidget.x >= currentWidget.x + currentWidget.width ||
-            loadedWidget.x + loadedWidget.width <= currentWidget.x ||
-            loadedWidget.y >= currentWidget.y + currentWidget.height ||
-            loadedWidget.y + loadedWidget.height <= currentWidget.y
-          ) {
-            console.log(`${widget.module_name} 위젯과 겹치지 않습니다.`);
-          } else {
-            console.log(`${widget.module_name} 위젯과 겹칩니다.`);
-          }
-        });
         Animated.spring(position, {
           toValue: { x: moveX, y: moveY },
           useNativeDriver: false,
-        }).start(() => {
-          const leftTopX = parseInt(Math.ceil(moveX) / widgetCellWidth);
-          const leftTopY = parseInt(Math.ceil(moveY) / widgetCellHeight);
-          const rightBottomX = leftTopX + (widgetRowCnt - 1);
-          const rightBottomY = leftTopY + (widgetColCnt - 1);
-          console.log("========== move end ==========");
-          console.log("leftTopX", leftTopX);
-          console.log("leftTopY", leftTopY);
-          console.log("rightBottomX", rightBottomX);
-          console.log("rightBottomY", rightBottomY);
-          console.log("moveX:", moveX);
-          console.log("moveY:", moveY);
-          console.log("========== move end ==========");
-          /*
-          위의 로그로 알게된 것(best): 모든 위젯의 위치는 "좌측 상단" 기준이다 !!!!!!!!!!!!!!!!!!!!!!!!!!!
-          */
-        });
+        }).start();
       },
     })
   ).current;
@@ -396,11 +347,6 @@ function PlaceWidgets({ navigation, route }) {
     /**
      * @todo 서버로 좌표 전달 => 위젯이 겹친다 ? 오류 코드 및 위젯 재배치 : 위젯 스타일 적용
      */
-    console.log("=========================");
-    console.log("x:", coordinate.x);
-    console.log("y:", coordinate.y);
-    console.log("=========================");
-    console.log(widgetList);
     let isStack = false;
     Object.keys(widgetList).map((key, idx) => {
       const widget = widgetList[key];
@@ -446,23 +392,24 @@ function PlaceWidgets({ navigation, route }) {
         {
           text: "OK",
           onPress: () => {
-            const saveWidget = { ...widgetList };
-            const saveMethod = async () => {
-              let url = IP_ADDRESS + "/user/template";
-              url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
-                saveWidget
-              )}`;
-              await fetch(url, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  saveWidget,
-                }),
-              });
-            };
-            saveMethod();
+            if (isEdit) {
+              const newWidget = { ...widget };
+              const widgetKey = widget.key;
+              newWidget.coordinate.x = coordinate.x;
+              newWidget.coordinate.y = coordinate.y;
+              const editedWidget = { ...widgetList };
+              delete editedWidget[widget.key];
+              const saveWidget = { ...editedWidget, [widgetKey]: newWidget };
+              saveWidgetWithServer(saveWidget);
+            } else {
+              const newWidget = { ...widget };
+              const newKey = Object.keys(widgetList).length + 1;
+              newWidget.coordinate.x = coordinate.x;
+              newWidget.coordinate.y = coordinate.y;
+              newWidget.key = newKey;
+              const saveWidget = { ...widgetList, [newKey]: newWidget };
+              saveWidgetWithServer(saveWidget);
+            }
             Alert.alert("완료", "위젯이 성공적으로 배치되었습니다.", [
               {
                 text: "OK",
@@ -513,8 +460,8 @@ function PlaceWidgets({ navigation, route }) {
               ...styles.widgetStyle,
               left: 0,
               top: 0,
-              width: `${route.params.size.width * 20}%`,
-              height: `${route.params.size.height * 10}%`,
+              width: `${widget.size.width * 20}%`,
+              height: `${widget.size.height * 10}%`,
               // backgroundColor: "transparent" 하면 애니메이션이 제대로 되네...? => 테두리를 transparent로!
               borderColor: "transparent",
               transform: [
@@ -525,11 +472,11 @@ function PlaceWidgets({ navigation, route }) {
             {...panResponder.panHandlers}
             onLayout={onLayout}
           >
-            <Text style={{ color: "white" }}>{route.params.module_name}</Text>
-            {route.params.theme == "Ionicons" && !isEdit ? (
-              <Ionicons name={route.params.icon} size={36} color="white" />
+            <Text style={{ color: "white" }}>{widget.module_name}</Text>
+            {widget.app.theme == "Ionicons" ? (
+              <Ionicons name={widget.app.icon} size={36} color="white" />
             ) : (
-              <Feather name={route.params.icon} size={36} color="white" />
+              <Feather name={widget.app.icon} size={36} color="white" />
             )}
           </AnimatedBox>
         ) : null}

@@ -28,7 +28,7 @@ function Login({ navigation }) {
   };
   async function loginWithServer() {
     let url = `${IP_ADDRESS}/account/login`;
-    url += `?id=${userId}&pw=${userPwd}`;
+    // url += `?id=${userId}&pw=${userPwd}`;
     const res = await fetch(url, {
       method: "POST",
       headers: {

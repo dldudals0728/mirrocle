@@ -16,29 +16,26 @@ import { MyButton } from "../components/MyButton";
 import { theme } from "../../colors";
 import { Icons } from "../../icons";
 import { IP_ADDRESS } from "../../temp/IPAddress";
+import { useIsFocused } from "@react-navigation/native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 function UserList({ navigation, route }) {
+  const isFocused = useIsFocused();
   /**
    * @todo 유저 정보를 수정할 수 있도록 버튼 또는 네비게이션 제공
    * @todo 등록된 프리셋이 없다 ? (프리셋을 등록해 보세요 alert; AddUser) : null
    */
-  console.log("IN user list");
-  console.log(route.params);
 
   // const accountIdx = route.params.accountIdx;
-  // console.log(accountIdx);
   const { accountIdx } = route.params;
-  console.log(accountIdx);
 
   const userColList = [0, 0];
   const [userList, setUserList] = useState([]);
 
   useEffect(() => {
-    console.log("useEffect, [] running");
     getUserListFromServer();
-  }, []);
+  }, [isFocused]);
 
   async function getUserListFromServer() {
     /**
@@ -48,14 +45,12 @@ function UserList({ navigation, route }) {
     url += `?accountIdx=${accountIdx}`;
     const res = await fetch(url);
     const userList = await res.json();
-    console.log(userList);
     const newUserList = [...userList];
     for (let i = newUserList.length; i < 4; i++) {
       newUserList.push({
         userIdx: null,
       });
     }
-    console.log(newUserList);
     setUserList(newUserList);
   }
 

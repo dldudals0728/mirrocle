@@ -10,6 +10,7 @@ function MyTextInput({
   onChangeText,
   onSubmitEditing,
   keyboardType,
+  placeholderTextColor,
 }) {
   return (
     <TextInput
@@ -22,6 +23,7 @@ function MyTextInput({
       onChangeText={onChangeText}
       onSubmitEditing={onSubmitEditing}
       keyboardType={keyboardType}
+      placeholderTextColor={placeholderTextColor}
     />
   );
 }

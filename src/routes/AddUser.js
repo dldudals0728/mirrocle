@@ -31,7 +31,7 @@ function AddUser({ navigation, route }) {
   const [selectedIcon, setSelectedIcon] = useState(
     require("../images/userIcon-1.png")
   );
-  const [iconKey, setIconKey] = useState("");
+  const [iconKey, setIconKey] = useState("icon__1");
 
   const addUserWithServer = async () => {
     let url = `${IP_ADDRESS}/user/create`;

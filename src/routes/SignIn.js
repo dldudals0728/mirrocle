@@ -59,6 +59,16 @@ function SignIn({ navigation }) {
           text: "OK",
         },
       ]);
+    } else if (userId.includes(" ")) {
+      Alert.alert(
+        "아이디 입력 오류",
+        "아이디에 공백 문자를 포함할 수 없습니다.",
+        [
+          {
+            text: "OK",
+          },
+        ]
+      );
     } else if (userPwd === "" || checkPwd === "") {
       Alert.alert("비밀번호 입력", "비밀번호를 입력해주세요.", [
         {
@@ -79,6 +89,16 @@ function SignIn({ navigation }) {
           text: "OK",
         },
       ]);
+    } else if (userPwd.includes(" ")) {
+      Alert.alert(
+        "비밀번호 입력 오류",
+        "비밀번호에 공백 문자를 포함할 수 없습니다.",
+        [
+          {
+            text: "OK",
+          },
+        ]
+      );
     } else if (userEmail === "") {
       Alert.alert("사용자 메일 입력", "사용자 메일을 입력해주세요.", [
         {
@@ -114,7 +134,7 @@ function SignIn({ navigation }) {
       navigation.pop();
     }
   };
-  const idCheck = () => {
+  const idCheck = async () => {
     if (userId === "") {
       Alert.alert("아이디 입력", "아이디를 입력해주세요.", [
         {
@@ -133,10 +153,18 @@ function SignIn({ navigation }) {
       return;
     }
     setCheckDuplicate(true);
-    if (userId === "abc123") {
-      setIsDuplicate(true);
+    setIsDuplicate(await checkDuplicateWithServer());
+  };
+
+  const checkDuplicateWithServer = async () => {
+    let url = `${IP_ADDRESS}/account/idcheck`;
+    url += `?id=${userId}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.idcheck === 1) {
+      return false;
     } else {
-      setIsDuplicate(false);
+      return true;
     }
   };
   return (

@@ -640,6 +640,44 @@ console.log(res);
 
 지금 코드를 보면 PUT 메서드로 값을 보낸다. 그러나 Back End 단에서 PUT으로 받는 /user/create 컨트롤러에서 return 값이 없기 때문에 console.log()시에 에러가 나타나는 것!!
 
+### JavaScript에서 Object의 key값을 변수 안의 값으로 설정하는 방법!
+
+```JS
+const key = "myKey";
+const obj = {
+    key: "myValue"
+}
+```
+
+JavaScript에서는 위와 같은 코드의 obj 결과가 아래와 같다.
+
+```JS
+{
+    key: "myValue"
+}
+```
+
+그러나, 내가 원하는 결과는
+
+```JS
+{
+    myKey: "myValue"
+}
+```
+
+이다.
+
+이럴때는
+
+```JS
+const key = "myKey";
+const obj = {
+    [key]: "myValue"
+}
+```
+
+이렇게 하면 된다! 실제로 vscode에서 변수명을 []로 감싸주면 해당 변수가 사용되었다는 뜻으로 변수의 색이 달라진다.
+
 # Back-End
 
 ## React Native & spring boot 연동 basic
