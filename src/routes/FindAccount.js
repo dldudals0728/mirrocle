@@ -101,7 +101,7 @@ function FindAccount({ navigation, route }) {
   const findId = async () => {
     const findId = await selectIdWithServer();
     if (findId.status === 200) {
-      setMessage(`${name}님의 비밀번호는 "${findId.Account_id}" 입니다.`);
+      setMessage(`${name}님의 아이디는 "${findId.Account_id}" 입니다.`);
     } else {
       setMessage("사용자 정보가 정확하지 않습니다!");
     }

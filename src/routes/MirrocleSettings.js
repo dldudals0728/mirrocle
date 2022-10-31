@@ -12,11 +12,11 @@ function MirrocleSettings({ navigation, route }) {
         <Logo imageSize={40} titleSize={15} subTextSize={8} />
       </View>
       <ScrollView>
-        <MyButton text="버튼 설정" />
+        {/* <MyButton text="버튼 설정" /> */}
         {/**
          * @todo 시간에 따른 디스플레이 자동 변경! 대박
          */}
-        <MyButton text="Mirrocle 시간 설정" />
+        {/* <MyButton text="Mirrocle 시간 설정" /> */}
         <MyButton
           text="사용자 관리"
           onPress={() => navigation.navigate("UserEdit", { accountIdx })}

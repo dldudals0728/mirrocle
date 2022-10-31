@@ -16,6 +16,7 @@ import {
 import { theme } from "../../colors";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
 import { IP_ADDRESS } from "../../temp/IPAddress";
 
@@ -27,7 +28,6 @@ const GRID_MARGIN_BOTTOM = 120;
 function PlaceWidgets({ navigation, route }) {
   const { accountIdx, userIdx, username, widget } = route.params;
   console.log("Place Widgets => widget:", widget);
-  BackHandler.addEventListener("hardwareBackPress", () => true);
   const isEdit = route.params.edit === true ? true : false;
   const widgetSizeRef = useRef({ width: 0, height: 0 });
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,6 @@ function PlaceWidgets({ navigation, route }) {
     } else {
       loadedWidget = JSON.parse(json.user_template);
     }
-    console.log("loaded widget list:", loadedWidget);
 
     // const tempWidget = [
     //   {
@@ -152,6 +151,10 @@ function PlaceWidgets({ navigation, route }) {
   };
 
   const saveWidgetWithServer = async (saveWidget) => {
+    console.log("===========================");
+    console.log("저장될 위젯 정보");
+    console.log(saveWidget);
+    console.log("===========================");
     let url = IP_ADDRESS + "/user/template";
     url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
       saveWidget
@@ -164,14 +167,24 @@ function PlaceWidgets({ navigation, route }) {
       body: JSON.stringify({
         saveWidget,
       }),
-    });
+    })
+      .then(() => console.log("fetch then"))
+      .catch((error) => console.log("error:", error));
+    console.log("save widget end");
   };
 
   useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => true
+    );
     loadWidgetFromServer();
-
     setDBLoading((prev) => !prev);
-    return () => setLoading((prev) => !prev);
+    return () => {
+      console.log("화면 닫힘!");
+      setLoading((prev) => !prev);
+      backHandler.remove();
+    };
   }, []);
 
   const widgetRowCnt = widget.size.width;
@@ -208,8 +221,6 @@ function PlaceWidgets({ navigation, route }) {
       (widgetSizeRef.current.width / widget.size.width) * widget.coordinate.x;
     const y =
       (widgetSizeRef.current.height / widget.size.height) * widget.coordinate.y;
-    console.log(widget.coordinate.x);
-    console.log(widget.coordinate.y);
     Animated.spring(position, {
       toValue: { x: x, y: y },
       useNativeDriver: false,
@@ -257,8 +268,6 @@ function PlaceWidgets({ navigation, route }) {
         // 각 위젯의 크기별로 positioning
         const gridX = widgetSizeRef.current.width / widgetRowCnt;
         const gridY = widgetSizeRef.current.height / widgetColCnt;
-        console.log("*** gridX:", gridX);
-        console.log("*** gridY:", gridY);
         const widgetCellWidth = Math.floor(gridX);
         const widgetCellHeight = Math.floor(gridY);
         // const setting = [false, false];
@@ -372,9 +381,7 @@ function PlaceWidgets({ navigation, route }) {
         loadedWidget.y >= currentWidget.y + currentWidget.height ||
         loadedWidget.y + loadedWidget.height <= currentWidget.y
       ) {
-        console.log(`${widget.module_name} 위젯과 겹치지 않습니다.`);
       } else {
-        console.log(`${widget.module_name} 위젯과 겹칩니다.`);
         isStack = true;
       }
     });
@@ -409,6 +416,12 @@ function PlaceWidgets({ navigation, route }) {
               newWidget.key = newKey;
               const saveWidget = { ...widgetList, [newKey]: newWidget };
               saveWidgetWithServer(saveWidget);
+              console.log(
+                "현재 widget list 길이:",
+                Object.keys(widgetList).length
+              );
+              console.log("현재 widget key list:", Object.keys(widgetList));
+              console.log("새로 들어갈 widget의 key값:", newKey);
             }
             Alert.alert("완료", "위젯이 성공적으로 배치되었습니다.", [
               {
@@ -473,10 +486,16 @@ function PlaceWidgets({ navigation, route }) {
             onLayout={onLayout}
           >
             <Text style={{ color: "white" }}>{widget.module_name}</Text>
-            {widget.app.theme == "Ionicons" ? (
+            {widget.app.theme === "Ionicons" ? (
               <Ionicons name={widget.app.icon} size={36} color="white" />
-            ) : (
+            ) : widget.app.theme === "Feather" ? (
               <Feather name={widget.app.icon} size={36} color="white" />
+            ) : (
+              <MaterialCommunityIcons
+                name={widget.app.icon}
+                size={36}
+                color="white"
+              />
             )}
           </AnimatedBox>
         ) : null}

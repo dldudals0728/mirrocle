@@ -1,12 +1,27 @@
 export const widgets = {
-  clock: {
+  analogClock: {
     key: 0,
     app: {
       theme: "Feather",
       icon: "clock",
     },
     coordinate: { x: 0, y: 0 },
-    module_name: "시계",
+    module_name: "아날로그 시계",
+    size: { height: 0, width: 0 },
+    attribute: {
+      detail: "",
+      attr_name: "",
+      attr_member: {},
+    },
+  },
+  digitalClock: {
+    key: 0,
+    app: {
+      theme: "MaterialCommunityIcons",
+      icon: "clock-digital",
+    },
+    coordinate: { x: 0, y: 0 },
+    module_name: "디지털 시계",
     size: { height: 0, width: 0 },
     attribute: {
       detail: "",
@@ -82,7 +97,10 @@ export const widgets = {
       detail: "",
       attr_name: "카테고리 선택",
       attr_member: {
-        category: "",
+        category: {
+          name: "",
+          text: "",
+        },
       },
     },
   },
@@ -99,7 +117,7 @@ export const widgets = {
       detail: "",
       attr_name: "Google Calendar 연동",
       attr_member: {
-        GoogleCalendarAPI: "",
+        gMail: "",
       },
     },
   },

@@ -24,6 +24,7 @@ import { theme } from "../../colors";
 import { widgetSizeList } from "../../Widgets";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
 import { MyTextInput } from "../components/MyTextInput";
 import { IP_ADDRESS } from "../../temp/IPAddress";
@@ -54,9 +55,39 @@ const subwayOption = {
   공항철도: { color: "#0090D2", description: "공항" },
 };
 
+const newsCategories = [
+  {
+    name: "all", // 실제 카테고리
+    text: "전체보기", // 렌더링할 때 사용할 한글 카테고리
+  },
+  {
+    name: "business",
+    text: "비즈니스",
+  },
+  {
+    name: "entertainment",
+    text: "엔터테인먼트",
+  },
+  {
+    name: "health",
+    text: "건강",
+  },
+  {
+    name: "science",
+    text: "과학",
+  },
+  {
+    name: "sports",
+    text: "스포츠",
+  },
+  {
+    name: "technology",
+    text: "기술",
+  },
+];
+
 function MainScreen({ navigation, route }) {
   const { accountIdx, userIdx, username } = route.params;
-  console.log(route.params);
   const isFocused = useIsFocused();
   const [isKeyboardShow, setIsKeyboardShow] = useState(false);
   const [indicatorVisible, setIndicatorVisible] = useState(false);
@@ -102,6 +133,13 @@ function MainScreen({ navigation, route }) {
 
   const [subwayStationName, setSubwayStationName] = useState("");
   const [subwayStationList, setSubwayStationList] = useState([]);
+
+  const [newsCategory, setNewsCategory] = useState({
+    name: "",
+    text: "",
+  });
+
+  const [gmail, setGmail] = useState("");
 
   const [busRouteNumber, setBusRouteNumber] = useState("");
   // const []
@@ -153,10 +191,7 @@ function MainScreen({ navigation, route }) {
       return;
     }
     setIndicatorVisible(true);
-    const API = API_KEYS.seoulSubwayStationInfo;
-    // const url = `http://apis.data.go.kr/1613000/SubwayInfoService/getKwrdFndSubwaySttnList?serviceKey=${API}&pageNo=${"1"}&numOfRows=${"1000"}&_type=${"json"}&subwayStationName=${encodeURIComponent(
-    //   subwayStationName
-    // )}`;
+    const API = await getAPIKey();
     const url = `http://openapi.seoul.go.kr:8088/${API}/json/SearchSTNBySubwayLineInfo/1/1000/${" "}/${subwayStationName}`;
     const res = await fetch(url);
     const json = await res.json();
@@ -212,19 +247,120 @@ function MainScreen({ navigation, route }) {
               setLoadedWidget(temp);
               setAttributeVisible(!attributeVisible);
               setSettingVisible(!settingVisible);
-              setSubwayStationList([]);
-              setSubwayStationName("");
-              setStation({
-                subwayStationName: "",
-                subwayRouteName: "",
-                subwayStationId: "",
-              });
               saveWidgetWithServer(temp);
             },
           },
         ]
       );
     }
+  };
+
+  const saveGoogleAPI = () => {
+    if (!gmail) {
+      Alert.alert("g-mail 입력 오류", "g-mail이 입력되지 않았습니다!", [
+        {
+          text: "OK",
+        },
+      ]);
+      return;
+    } else if (
+      !gmail.includes("@") ||
+      !gmail.includes(".") ||
+      !gmail.includes("gmail.com")
+    ) {
+      Alert.alert(
+        "g-mail 입력 오류",
+        "옳바른 g-email 형식이 아닙니다.\n@gmail.com을 사용해 주세요",
+        [
+          {
+            text: "OK",
+          },
+        ]
+      );
+      return;
+    } else {
+      Alert.alert(
+        `${gmail}\n님의 계정`,
+        "해당 계정의 Calendar를 연동하시겠습니까?",
+        [
+          {
+            text: "cancel",
+          },
+          {
+            text: "OK",
+            onPress: () => {
+              Alert.alert("완료", "Google Calendar가 연동되었습니다.", [
+                {
+                  text: "OK",
+                },
+              ]);
+              const temp = { ...loadedWidget };
+              temp[editWidget.current.key].attribute.attr_member.gmail = gmail;
+              temp[
+                editWidget.current.key
+              ].attribute.detail = `${gmail}\n님의 Calendar`;
+
+              setLoadedWidget(temp);
+              setAttributeVisible(!attributeVisible);
+              setSettingVisible(!settingVisible);
+              saveWidgetWithServer(temp);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const saveNewsCategory = () => {
+    if (!newsCategory.text) {
+      Alert.alert("카테고리 선택 오류", "카테고리가 선택되지 않았습니다!", [
+        {
+          text: "OK",
+        },
+      ]);
+      return;
+    } else {
+      Alert.alert(
+        `${newsCategory.text} 뉴스`,
+        "해당 카테고리로 설정하시겠습니까?",
+        [
+          {
+            text: "cancel",
+          },
+          {
+            text: "OK",
+            onPress: () => {
+              Alert.alert("완료", "뉴스 카데고리가 설정되었습니다.", [
+                {
+                  text: "OK",
+                },
+              ]);
+              const temp = { ...loadedWidget };
+              temp[editWidget.current.key].attribute.attr_member.category.name =
+                newsCategory.name;
+              temp[editWidget.current.key].attribute.attr_member.category.text =
+                newsCategory.text;
+              temp[
+                editWidget.current.key
+              ].attribute.detail = `${newsCategory.text} 카테고리`;
+
+              setLoadedWidget(temp);
+              setAttributeVisible(!attributeVisible);
+              setSettingVisible(!settingVisible);
+              saveWidgetWithServer(temp);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const getAPIKey = async () => {
+    let url = IP_ADDRESS + "/api/select";
+    url += `?name=seoulSubwayStationInfo`;
+    const res = await fetch(url);
+    const json = await res.json();
+    return json.api_key;
   };
 
   const setWidgetSize = (width, height) => {
@@ -270,8 +406,9 @@ function MainScreen({ navigation, route }) {
     delete widgetList[key];
     const arrayWidgetList = Object.values(widgetList);
     arrayWidgetList.forEach((value, idx) => {
-      value.key = idx.toString();
-      newWidgetList[parseInt(idx)] = value;
+      const keyIdx = idx + 1;
+      value.key = keyIdx.toString();
+      newWidgetList[keyIdx.toString()] = value;
     });
     setIsWidgetSelected(isWidgetSelected ? false : null);
     setLoadedWidget(newWidgetList);
@@ -305,106 +442,40 @@ function MainScreen({ navigation, route }) {
     } else {
       loadedWidget = JSON.parse(json.user_template);
     }
-    console.log(loadedWidget);
-    // const tempWidget = [
-    //   {
-    //     coordinate: { x: 0, y: 0 },
-    //     module_name: "시계",
-    //     size: { height: 2, width: 2 },
-    //   },
-    //   {
-    //     coordinate: { x: 4, y: 0 },
-    //     module_name: "날씨",
-    //     size: { height: 1, width: 1 },
-    //   },
-    //   {
-    //     coordinate: { x: 3, y: 4 },
-    //     module_name: "교통정보",
-    //     size: { height: 3, width: 2 },
-    //   },
-    //   {
-    //     coordinate: { x: 0, y: 9 },
-    //     module_name: "ToDo",
-    //     size: { height: 1, width: 3 },
-    //   },
-    // ];
+    console.log("====================");
+    console.log("key list");
+    console.log(Object.keys(loadedWidget));
+    console.log("====================");
+    console.log("====================");
+    console.log("attribute key list");
+    Object.values(loadedWidget).forEach((value) => console.log(value.key));
+    console.log("====================");
 
-    const tempWidget = {
-      0: {
-        key: "0",
-        coordinate: { x: 0, y: 0 },
-        module_name: "시계",
-        size: { height: 2, width: 2 },
-        attribute: {
-          detail: "",
-          attr_name: "",
-          attr_member: {},
-        },
-      },
-      1: {
-        key: "1",
-        coordinate: { x: 4, y: 0 },
-        module_name: "날씨",
-        size: { height: 1, width: 1 },
-        attribute: {
-          detail: "",
-          attr_name: "위치 설정",
-          attr_member: {
-            latitude: 0,
-            longitude: 0,
-            city: "",
-          },
-        },
-      },
-      2: {
-        key: "2",
-        coordinate: { x: 3, y: 4 },
-        module_name: "교통정보(지하철)",
-        size: { height: 3, width: 2 },
-        attribute: {
-          detail: "",
-          attr_name: "지하철 역 선택",
-          attr_member: {
-            subwayStationName: "",
-            subwayRouteName: "",
-            subwayStationId: "",
-          },
-        },
-      },
-      3: {
-        key: "3",
-        coordinate: { x: 0, y: 9 },
-        module_name: "ToDo",
-        size: { height: 1, width: 3 },
-        attribute: {
-          detail: "",
-          attr_name: "ToDo list 편집",
-          attr_member: {
-            toDos: [],
-          },
-        },
-      },
-      4: {
-        key: "4",
-        coordinate: { x: 0, y: 2 },
-        module_name: "교통정보(버스)",
-        size: { height: 1, width: 2 },
-        attribute: {
-          detail: "",
-          attr_name: "내 주변 정류소 찾기",
-          attr_member: {
-            subwayStationName: "",
-            subwayRouteName: "",
-            subwayStationId: "",
-          },
-        },
-      },
-    };
     setLoadedWidget(loadedWidget);
   };
 
   const keyboardShow = () => setIsKeyboardShow((prev) => !prev);
   const keyboradHide = () => setIsKeyboardShow((prev) => !prev);
+
+  const setDefault = () => {
+    setSubwayStationName("");
+    setSubwayStationList([]);
+    setStation({
+      subwayStationName: "",
+      subwayRouteName: "",
+      subwayStationId: "",
+    });
+    setNewsCategory({
+      name: "",
+      text: "",
+    });
+  };
+
+  useEffect(() => {
+    if (attributeVisible === false) {
+      setDefault();
+    }
+  }, [attributeVisible]);
 
   useEffect(() => {
     loadWidgetFromServer();
@@ -633,14 +704,20 @@ function MainScreen({ navigation, route }) {
                             });
                           }}
                         >
-                          {selectedWidget.app.theme == "Ionicons" ? (
+                          {selectedWidget.app.theme === "Ionicons" ? (
                             <Ionicons
                               name={selectedWidget.app.icon}
                               size={80}
                               color="white"
                             />
-                          ) : (
+                          ) : selectedWidget.app.theme === "Feather" ? (
                             <Feather
+                              name={selectedWidget.app.icon}
+                              size={80}
+                              color="white"
+                            />
+                          ) : (
+                            <MaterialCommunityIcons
                               name={selectedWidget.app.icon}
                               size={80}
                               color="white"
@@ -699,7 +776,7 @@ function MainScreen({ navigation, route }) {
             bounces={false}
             overScrollMode="never"
           >
-            {widgetWrapper.map((widgetRow, idx) => (
+            {widgetWrapper.map((wrapper, idx) => (
               <View
                 key={idx}
                 style={{
@@ -708,7 +785,7 @@ function MainScreen({ navigation, route }) {
                   justifyContent: "center",
                 }}
               >
-                {widgetRow.map((widget, idx) => (
+                {wrapper.map((widget, idx) => (
                   <TouchableOpacity
                     key={idx}
                     onPress={() => {
@@ -731,14 +808,20 @@ function MainScreen({ navigation, route }) {
                         marginBottom: 10,
                       }}
                     >
-                      {widget.app.theme == "Ionicons" ? (
+                      {widget.app.theme === "Ionicons" ? (
                         <Ionicons
                           name={widget.app.icon}
                           size={80}
                           color="white"
                         />
-                      ) : (
+                      ) : widget.app.theme === "Feather" ? (
                         <Feather
+                          name={widget.app.icon}
+                          size={80}
+                          color="white"
+                        />
+                      ) : (
+                        <MaterialCommunityIcons
                           name={widget.app.icon}
                           size={80}
                           color="white"
@@ -812,6 +895,9 @@ function MainScreen({ navigation, route }) {
                   animating={indicatorVisible}
                   style={{ position: "absolute", top: "49%", zIndex: 50 }}
                 />
+                {/**
+                 * attr_name에 따라 화면 표시 - 지하철 역 선택
+                 */}
                 {isWidgetSelected &&
                 editWidget.current.attribute.attr_name === "지하철 역 선택" ? (
                   <View
@@ -827,6 +913,7 @@ function MainScreen({ navigation, route }) {
                       onChangeText={setSubwayStationName}
                       returnKeyType="done"
                       onSubmitEditing={getStation}
+                      placeholderTextColor="#C0C0C0"
                       style={{
                         marginTop: 20,
                         marginBottom: 10,
@@ -834,7 +921,7 @@ function MainScreen({ navigation, route }) {
                     />
                     <View
                       style={{
-                        ...styles.stationContainer,
+                        ...styles.textContainer,
                         marginBottom: 5,
                         justifyContent: "center",
                         borderColor: station.subwayStationId
@@ -842,6 +929,9 @@ function MainScreen({ navigation, route }) {
                           : "black",
                       }}
                     >
+                      {/**
+                       * attr_name: 지하철 - station을 선택했는지 확인 - start
+                       */}
                       {station.subwayStationId ? (
                         <View
                           style={{
@@ -888,6 +978,9 @@ function MainScreen({ navigation, route }) {
                         </Text>
                       )}
                     </View>
+                    {/**
+                     * attr_name: 지하철 - station을 선택했는지 확인 - end
+                     */}
                     <View
                       style={{
                         height: 1,
@@ -898,6 +991,9 @@ function MainScreen({ navigation, route }) {
                       }}
                     ></View>
                     <ScrollView showsVerticalScrollIndicator={false}>
+                      {/**
+                       * attr_name: 지하철 - station 검색 결과 - start
+                       */}
                       {subwayStationList.length !== 0 ? (
                         subwayStationList.map((value, idx) => {
                           return (
@@ -914,7 +1010,7 @@ function MainScreen({ navigation, route }) {
                             >
                               <View
                                 style={{
-                                  ...styles.stationContainer,
+                                  ...styles.textContainer,
                                   borderColor:
                                     subwayOption[value.LINE_NUM].color,
                                 }}
@@ -975,6 +1071,9 @@ function MainScreen({ navigation, route }) {
                         </View>
                       )}
                     </ScrollView>
+                    {/**
+                     * attr_name: 지하철 - station 검색 결과 - end
+                     */}
                     <MyButton
                       onPress={saveStation}
                       text="저장"
@@ -983,11 +1082,17 @@ function MainScreen({ navigation, route }) {
                       }}
                     />
                   </View>
-                ) : isWidgetSelected &&
+                ) : /**
+                 * attr_name에 따라 화면 표시 - 날씨
+                 */
+                isWidgetSelected &&
                   editWidget.current.attribute.attr_name === "위치 설정" ? (
                   <View
                     style={{ justifyContent: "center", alignItems: "center" }}
                   >
+                    {/**
+                     * attr_name: 날씨 - gps 검색 - start
+                     */}
                     {indicatorVisible ? (
                       <View>
                         <Text style={{ color: "white", fontSize: 16 }}>
@@ -1023,6 +1128,127 @@ function MainScreen({ navigation, route }) {
                       </View>
                     )}
                   </View>
+                ) : /**
+                 * attr_name: 날씨 - gps 검색 - end
+                 */
+                /**
+                 * attr_name: 카테고리 선택 - 뉴스 카테고리 선택 start
+                 */
+                isWidgetSelected &&
+                  editWidget.current.attribute.attr_name === "카테고리 선택" ? (
+                  <View
+                    style={{
+                      flex: 1,
+                      width: "100%",
+                      paddingTop: 15,
+                      paddingHorizontal: 15,
+                      // borderColor: "alice",
+                      // backgroundColor: "tomato",
+                    }}
+                  >
+                    <View
+                      style={{
+                        ...styles.textContainer,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        borderColor: "skyblue",
+                        backgroundColor: "aliceblue",
+                      }}
+                    >
+                      <Text style={{ fontSize: 22 }}>
+                        {newsCategory.text === ""
+                          ? "카테고리를 선택해주세요"
+                          : newsCategory.text}
+                      </Text>
+                    </View>
+                    <ScrollView
+                      showsVerticalScrollIndicator={false}
+                      style={{ flex: 1 }}
+                    >
+                      {newsCategories.map((category, idx) => {
+                        return (
+                          <TouchableOpacity
+                            key={idx}
+                            onPress={() => setNewsCategory(category)}
+                          >
+                            <View
+                              style={{
+                                ...styles.textContainer,
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text style={{ fontSize: 24 }}>
+                                {category.text}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+                    <MyButton
+                      style={{
+                        borderColor: "skyblue",
+                        borderWidth: 3,
+                        backgroundColor: "aliceblue",
+                      }}
+                      text={"저장"}
+                      onPress={saveNewsCategory}
+                    />
+                  </View>
+                ) : /**
+                 * attr_name: Google Calendar 연동 - 달력 Google Calendar 연동 start
+                 */
+                isWidgetSelected &&
+                  editWidget.current.attribute.attr_name ===
+                    "Google Calendar 연동" ? (
+                  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <View
+                      style={{
+                        flex: 1,
+                        width: "100%",
+                        paddingVertical: 20,
+                        paddingHorizontal: 20,
+                      }}
+                    >
+                      <MyTextInput
+                        placeholder={"Google mail 입력"}
+                        placeholderTextColor="#C0C0C0"
+                        value={gmail}
+                        onChangeText={setGmail}
+                        returnKeyType="done"
+                        keyboardType="email-address"
+                        onSubmitEditing={saveGoogleAPI}
+                      />
+                      <View>
+                        <Text style={{ color: "white", marginBottom: 10 }}>
+                          1. 웹에서 Google 로그인 후에 Google Calendar 앱 접속
+                          후
+                        </Text>
+                        <Text style={{ color: "white", marginBottom: 10 }}>
+                          우측 상단 톱니바퀴를 눌러 설정에 들어갑니다.
+                        </Text>
+                        <Text style={{ color: "white", marginBottom: 10 }}>
+                          2. "좌측의 내 캘린더의 설정"에서 공유할 캘린더를
+                          선택합니다.
+                        </Text>
+                        <Text style={{ color: "white", marginBottom: 10 }}>
+                          3. 선택된 캘린더의 "일정의 액세스 권한"에서 "공개 사용
+                          설정"을 체크하시고, 모든 일정 세부사항 보기를
+                          선택합니다.
+                        </Text>
+                      </View>
+                      <MyButton
+                        style={{
+                          borderColor: "skyblue",
+                          borderWidth: 3,
+                          backgroundColor: "aliceblue",
+                        }}
+                        text={"Google Calendar API 연동"}
+                        onPress={saveGoogleAPI}
+                      />
+                    </View>
+                  </TouchableWithoutFeedback>
                 ) : null}
               </View>
             </View>
@@ -1090,6 +1316,7 @@ function MainScreen({ navigation, route }) {
                         username,
                         accountIdx,
                         userIdx,
+                        widgetKey: editWidget.current.key,
                       });
                       setPreviewVisible(!previewVisible);
                       setSettingVisible(!settingVisible);
@@ -1437,7 +1664,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  stationContainer: {
+  textContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

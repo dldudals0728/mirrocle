@@ -44,7 +44,7 @@ function UserEdit({ navigation, route }) {
 
   const editUser = (idx) => {
     const user = userList[idx];
-    navigation.navigate("AddUser", { user });
+    navigation.navigate("AddUser", { accountIdx, mode: "edit", user });
   };
   const deleteUser = (idx) => {
     Alert.alert("사용자 삭제", "선택한 사용자를 삭제하시겠습니까?", [

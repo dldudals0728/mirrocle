@@ -15,15 +15,56 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 
 const OS = Platform.OS;
 const AnimatedBox = Animated.createAnimatedComponent(View);
 
 function ToDos({ navigation, route }) {
+  const { accountIdx, userIdx, username, widgetKey } = route.params;
+  const [loadedWidget, setLoadedWidget] = useState({});
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
   const [calendarVisible, setCalendarVisible] = useState(false);
   const AnimRef = useRef([]);
+
+  const saveToDosWithServer = async () => {
+    const tempWidget = { ...loadedWidget };
+    tempWidget[widgetKey].attribute.attr_member.toDos = toDos;
+    let url = IP_ADDRESS + "/user/template";
+    url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
+      tempWidget
+    )}`;
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tempWidget,
+      }),
+    });
+  };
+
+  const getWidgetFromServer = async () => {
+    let url = IP_ADDRESS + "/user/select";
+    url += `?accountIdx=${accountIdx}&userIdx=${userIdx}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    let loadedWidget;
+    if (json.status === 500) {
+      loadedWidget = {};
+    } else {
+      loadedWidget = JSON.parse(json.user_template);
+    }
+    setLoadedWidget(loadedWidget);
+    loadToDos(loadedWidget);
+  };
+
+  const loadToDos = (widget) => {
+    const loadedToDos = widget[widgetKey].attribute.attr_member.toDos;
+    setToDos(loadedToDos);
+  };
 
   const urgentToDo = (key) => {
     const newToDos = { ...toDos };
@@ -96,7 +137,7 @@ function ToDos({ navigation, route }) {
   };
 
   const saveToDos = () => {
-    Alert.alert("ToDo list 저장", "현재 작업을 저장하시겠습니까?", [
+    Alert.alert("ToDo list 저장", "ToDo list를 저장하시겠습니까?", [
       {
         text: "cancel",
       },
@@ -108,11 +149,16 @@ function ToDos({ navigation, route }) {
               text: "OK",
             },
           ]);
+          saveToDosWithServer();
           navigation.pop();
         },
       },
     ]);
   };
+
+  useEffect(() => {
+    getWidgetFromServer();
+  }, []);
   return (
     <View style={styles.container}>
       <Modal
@@ -130,7 +176,7 @@ function ToDos({ navigation, route }) {
         </View>
       </Modal>
       <View style={styles.header}>
-        <Text style={styles.headerText}>{route.params.username}</Text>
+        <Text style={styles.headerText}>{username}</Text>
         <Text style={{ fontSize: 24, fontWeight: "600", color: "#808080" }}>
           ToDo List
         </Text>

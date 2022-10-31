@@ -21,7 +21,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ICON_BOX_LENGTH = parseInt(Object.keys(Icons).length / 4 + 1);
 
 function AddUser({ navigation, route }) {
-  const { accountIdx } = route.params;
+  const { accountIdx, mode, user } = route.params;
   const [isfromedit, setIsFromEdit] = useState();
   const [username, setUsername] = useState("");
   const iconBox = [];
@@ -33,8 +33,25 @@ function AddUser({ navigation, route }) {
   );
   const [iconKey, setIconKey] = useState("icon__1");
 
+  const editUserWithServer = async () => {
+    let url = `${IP_ADDRESS}/user/update`;
+    url += `?accountIdx=${accountIdx}&userIdx=${user.userIdx}&userId=${username}&userImage=${iconKey}`;
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        accountIdx: accountIdx,
+        userIdx: user.userIdx,
+        userId: username,
+        userImage: iconKey,
+      }),
+    });
+  };
+
   const addUserWithServer = async () => {
-    let url = `${IP_ADDRESS}/user/create`;
+    let url = `${IP_ADDRESS}/user/update`;
     url += `?userId=${username}&accountIdx=${accountIdx}&userImage=${iconKey}`;
     await fetch(url, {
       method: "PUT",
@@ -46,6 +63,36 @@ function AddUser({ navigation, route }) {
         accountIdx: accountIdx,
         userImage: iconKey,
       }),
+    });
+  };
+
+  const editUser = async () => {
+    if (username === "") {
+      Alert.alert("유저 이름 입력", "사용자의 이름을 설정해주세요.", [
+        {
+          text: "OK",
+        },
+      ]);
+      return;
+    }
+    /**
+     * @todo 해당 유저를 계정에 연결시킨다.
+     */
+    await editUserWithServer();
+    Alert.alert("사용자 생성", "사용자가 생성되었습니다.", [
+      {
+        text: "OK",
+      },
+    ]);
+    navigation.reset({
+      routes: [
+        {
+          name: "UserList",
+          params: {
+            accountIdx,
+          },
+        },
+      ],
     });
   };
 
@@ -78,16 +125,15 @@ function AddUser({ navigation, route }) {
       ],
     });
   };
-  const checkroute = () => {
-    const route = navigation.getState().routes;
-    const pop = route.map((hi) => hi.name);
-    if (pop[parseInt(pop.length) - 2] == "UserEdit") {
+  useEffect(() => {
+    if (mode === "edit") {
       setIsFromEdit(true);
+      setUsername(user.userId);
+      setSelectedIcon(Icons[user.userImage].src);
     } else {
       setIsFromEdit(false);
     }
-  };
-  useEffect(checkroute, []);
+  }, []);
 
   useEffect(() => console.log(iconKey), [iconKey]);
 
@@ -140,7 +186,7 @@ function AddUser({ navigation, route }) {
       <MyButton
         style={{ marginTop: 20 }}
         text={isfromedit ? "수정완료" : "추가"}
-        onPress={addUser}
+        onPress={isfromedit ? editUser : addUser}
       />
       <TouchableOpacity>
         <View
