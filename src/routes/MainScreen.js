@@ -31,11 +31,43 @@ import { IP_ADDRESS } from "../../temp/IPAddress";
 import { API_KEYS } from "../../temp/API";
 import { widgets } from "../components/Widgets";
 import { useIsFocused } from "@react-navigation/native";
+import axios from "axios";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const CONTAINER_HORIZONTAL_PADDING = 10;
 const AnimatedBox = Animated.createAnimatedComponent(View);
 const OS = Platform.OS;
+
+const moduleSize = {
+  "아날로그 시계": {
+    x: 2,
+    y: 2,
+  },
+  "디지털 시계": {
+    x: 2,
+    y: 1,
+  },
+  날씨: {
+    x: 2,
+    y: 2,
+  },
+  지하철: {
+    x: 3,
+    y: 1,
+  },
+  ToDo: {
+    x: 1,
+    y: 3,
+  },
+  뉴스: {
+    x: 4,
+    y: 3,
+  },
+  달력: {
+    x: 3,
+    y: 4,
+  },
+};
 
 const subwayOption = {
   "01호선": { color: "#0052A4", description: "1" },
@@ -311,6 +343,57 @@ function MainScreen({ navigation, route }) {
     }
   };
 
+  const deleteGoogleAPI = () => {
+    const temp = { ...loadedWidget };
+    const currentGmail =
+      temp[editWidget.current.key].attribute.attr_member.gmail;
+
+    if (!currentGmail) {
+      Alert.alert(
+        "Google Calendar 연동 오류",
+        "연동된 Google Calendar가 존재하지 않습니다!",
+        [
+          {
+            text: "OK",
+          },
+        ]
+      );
+      return;
+    } else {
+      Alert.alert(
+        "Google Calendar 연결 해제",
+        `${currentGmail}\n해당 계정과의 연결을 해제하시겠습니까?`,
+        [
+          {
+            text: "cancel",
+          },
+          {
+            text: "OK",
+            onPress: () => {
+              Alert.alert(
+                "연결 해제",
+                "Google Calendar 연결이 해제되었습니다.",
+                [
+                  {
+                    text: "OK",
+                  },
+                ]
+              );
+              const temp = { ...loadedWidget };
+              temp[editWidget.current.key].attribute.attr_member.gmail = "";
+              temp[editWidget.current.key].attribute.detail = "";
+
+              setLoadedWidget(temp);
+              setAttributeVisible(!attributeVisible);
+              setSettingVisible(!settingVisible);
+              saveWidgetWithServer(temp);
+            },
+          },
+        ]
+      );
+    }
+  };
+
   const saveNewsCategory = () => {
     if (!newsCategory.text) {
       Alert.alert("카테고리 선택 오류", "카테고리가 선택되지 않았습니다!", [
@@ -420,14 +503,19 @@ function MainScreen({ navigation, route }) {
     url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
       saveWidget
     )}`;
-    await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        saveWidget,
-      }),
+    // await fetch(url, {
+    //   method: "PUT",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     saveWidget,
+    //   }),
+    // });
+    await axios.put(url, {
+      accountIdx,
+      userIdx,
+      user_template: JSON.stringify(saveWidget),
     });
   };
 
@@ -673,7 +761,7 @@ function MainScreen({ navigation, route }) {
                   //   ? { ...detailPanResponder.panHandlers }
                   //   : null)}
                 >
-                  {widgetSizeList.width.map((width, key) =>
+                  {/* {widgetSizeList.width.map((width, key) =>
                     widgetSizeList.height.map((height, key) => (
                       <View
                         key={key}
@@ -729,7 +817,66 @@ function MainScreen({ navigation, route }) {
                         </Text>
                       </View>
                     ))
-                  )}
+                  )} */}
+                  <View
+                    style={{
+                      width: SCREEN_WIDTH,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "rgba(128, 128, 128, 0.3)",
+                        borderRadius: 10,
+                        width: 200,
+                        height: 200,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                      onPress={() => {
+                        setWidgetListVisible(!widgetListVisible);
+                        setWidgetDetailVisible(!widgetDetailVisible);
+                        setWidgetSize(
+                          moduleSize[selectedWidget.module_name].x,
+                          moduleSize[selectedWidget.module_name].y
+                        );
+                        navigation.navigate("PlaceWidgets", {
+                          widget: selectedWidget,
+                          accountIdx,
+                          userIdx,
+                          username,
+                        });
+                      }}
+                    >
+                      {selectedWidget.app.theme === "Ionicons" ? (
+                        <Ionicons
+                          name={selectedWidget.app.icon}
+                          size={80}
+                          color="white"
+                        />
+                      ) : selectedWidget.app.theme === "Feather" ? (
+                        <Feather
+                          name={selectedWidget.app.icon}
+                          size={80}
+                          color="white"
+                        />
+                      ) : (
+                        <MaterialCommunityIcons
+                          name={selectedWidget.app.icon}
+                          size={80}
+                          color="white"
+                        />
+                      )}
+                    </TouchableOpacity>
+                    <Text style={{ color: "white", fontSize: 28 }}>
+                      {selectedWidget.module_name === ""
+                        ? null
+                        : `${moduleSize[selectedWidget.module_name].x} X ${
+                            moduleSize[selectedWidget.module_name].y
+                          }`}
+                    </Text>
+                  </View>
                 </ScrollView>
               </View>
               <View
@@ -1247,6 +1394,15 @@ function MainScreen({ navigation, route }) {
                         text={"Google Calendar API 연동"}
                         onPress={saveGoogleAPI}
                       />
+                      <MyButton
+                        style={{
+                          borderColor: "#FF9090",
+                          borderWidth: 3,
+                          backgroundColor: "#FFDFDF",
+                        }}
+                        text={"Google Calendar 연동 해제"}
+                        onPress={deleteGoogleAPI}
+                      />
                     </View>
                   </TouchableWithoutFeedback>
                 ) : null}
@@ -1372,7 +1528,6 @@ function MainScreen({ navigation, route }) {
                               },
                             ]
                           );
-                          setPreviewVisible(!previewVisible);
                           setSettingVisible(!settingVisible);
                           deleteWidget(editWidget.current.key);
                         },

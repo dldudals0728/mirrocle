@@ -19,6 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MyButton } from "../components/MyButton";
 import { IP_ADDRESS } from "../../temp/IPAddress";
+import axios from "axios";
 
 const AnimatedBox = Animated.createAnimatedComponent(View);
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -151,10 +152,9 @@ function PlaceWidgets({ navigation, route }) {
   };
 
   const saveWidgetWithServer = async (saveWidget) => {
-    console.log("===========================");
-    console.log("저장될 위젯 정보");
-    console.log(saveWidget);
-    console.log("===========================");
+    /**
+     * 1. url string template로 바꿔봄. 2. body 구조 옳바르게 변경. 3. axios + dto로 받기(테스트 해보자!!)
+     */
     let url = IP_ADDRESS + "/user/template";
     url += `?accountIdx=${accountIdx}&userIdx=${userIdx}&userTemplate=${JSON.stringify(
       saveWidget
@@ -181,7 +181,6 @@ function PlaceWidgets({ navigation, route }) {
     loadWidgetFromServer();
     setDBLoading((prev) => !prev);
     return () => {
-      console.log("화면 닫힘!");
       setLoading((prev) => !prev);
       backHandler.remove();
     };
@@ -262,6 +261,11 @@ function PlaceWidgets({ navigation, route }) {
         position.flattenOffset();
         currentX = Math.round(position.x._value);
         currentY = Math.round(position.y._value);
+        console.log("===========================");
+        console.log("===========================");
+        console.log(`currentX: "${currentX}"`);
+        console.log("===========================");
+        console.log("===========================");
         let moveX = NaN;
         let moveY = NaN;
         const setting = [false, false];
@@ -398,7 +402,7 @@ function PlaceWidgets({ navigation, route }) {
         },
         {
           text: "OK",
-          onPress: () => {
+          onPress: async () => {
             if (isEdit) {
               const newWidget = { ...widget };
               const widgetKey = widget.key;
@@ -407,7 +411,9 @@ function PlaceWidgets({ navigation, route }) {
               const editedWidget = { ...widgetList };
               delete editedWidget[widget.key];
               const saveWidget = { ...editedWidget, [widgetKey]: newWidget };
-              saveWidgetWithServer(saveWidget);
+              console.log("!!! saveWidget !!!");
+              console.log(saveWidget);
+              await saveWidgetWithServer(saveWidget);
             } else {
               const newWidget = { ...widget };
               const newKey = Object.keys(widgetList).length + 1;
@@ -415,13 +421,15 @@ function PlaceWidgets({ navigation, route }) {
               newWidget.coordinate.y = coordinate.y;
               newWidget.key = newKey;
               const saveWidget = { ...widgetList, [newKey]: newWidget };
-              saveWidgetWithServer(saveWidget);
+              await saveWidgetWithServer(saveWidget);
               console.log(
                 "현재 widget list 길이:",
                 Object.keys(widgetList).length
               );
               console.log("현재 widget key list:", Object.keys(widgetList));
               console.log("새로 들어갈 widget의 key값:", newKey);
+              console.log("!!! saveWidget !!!");
+              console.log(saveWidget);
             }
             Alert.alert("완료", "위젯이 성공적으로 배치되었습니다.", [
               {

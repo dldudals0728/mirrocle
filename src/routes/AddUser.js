@@ -51,7 +51,7 @@ function AddUser({ navigation, route }) {
   };
 
   const addUserWithServer = async () => {
-    let url = `${IP_ADDRESS}/user/update`;
+    let url = `${IP_ADDRESS}/user/create`;
     url += `?userId=${username}&accountIdx=${accountIdx}&userImage=${iconKey}`;
     await fetch(url, {
       method: "PUT",
@@ -130,6 +130,7 @@ function AddUser({ navigation, route }) {
       setIsFromEdit(true);
       setUsername(user.userId);
       setSelectedIcon(Icons[user.userImage].src);
+      setIconKey(user.userImage);
     } else {
       setIsFromEdit(false);
     }

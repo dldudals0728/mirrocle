@@ -676,6 +676,29 @@ const obj = {
 }
 ```
 
+### React-Native android 뒤로가기 버튼이 작동이 안될 때
+
+ios로 코딩을 마치고 android로 테스트를 하던 도중 PlaceWidget에 방문한 후에 MainScreen으로 돌아갔을 때 뒤로가기 버튼이 작동이 되지 않는 문제가 있었다.<br>
+원인은 PlaceWidget.js에 있는 BackHandler가 문제를 일으킨 것이다.
+
+```JS
+BackHandler.addEventListener("hardwareBackPress", () => true);
+```
+
+해당 event listener를 추가하면 전역적으로 android의 물리적 뒤로가기 버튼이 막히는 것이다.<br>
+이를 해결하기 위해 useEffect() Hook을 사용하였다.
+
+```JS
+useEffect(() => {
+const backHandler = BackHandler.addEventListener("hardwareBackPress", () => true);
+    return () => {
+        backHandler.remove();
+    };
+}, []);
+```
+
+위처럼 backHandler event listener id값을 저장해두고, 화면을 벗어났을 때 해당 이벤트 리스너를 지워줌으로써 해결됐다!
+
 이렇게 하면 된다! 실제로 vscode에서 변수명을 []로 감싸주면 해당 변수가 사용되었다는 뜻으로 변수의 색이 달라진다.
 
 # Back-End

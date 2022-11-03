@@ -121,23 +121,23 @@ export const widgets = {
       },
     },
   },
-  bus: {
-    key: 0,
-    app: {
-      theme: "Ionicons",
-      icon: "bus",
-    },
-    coordinate: { x: 0, y: 0 },
-    module_name: "교통정보(버스)",
-    size: { height: 0, width: 0 },
-    attribute: {
-      detail: "",
-      attr_name: "내 주변 정류소 찾기",
-      attr_member: {
-        subwayStationName: "",
-        subwayRouteName: "",
-        subwayStationId: "",
-      },
-    },
-  },
+  // bus: {
+  //   key: 0,
+  //   app: {
+  //     theme: "Ionicons",
+  //     icon: "bus",
+  //   },
+  //   coordinate: { x: 0, y: 0 },
+  //   module_name: "교통정보(버스)",
+  //   size: { height: 0, width: 0 },
+  //   attribute: {
+  //     detail: "",
+  //     attr_name: "내 주변 정류소 찾기",
+  //     attr_member: {
+  //       subwayStationName: "",
+  //       subwayRouteName: "",
+  //       subwayStationId: "",
+  //     },
+  //   },
+  // },
 };

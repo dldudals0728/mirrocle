@@ -26,7 +26,6 @@ function ToDos({ navigation, route }) {
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const AnimRef = useRef([]);
 
   const saveToDosWithServer = async () => {
     const tempWidget = { ...loadedWidget };
@@ -102,7 +101,6 @@ function ToDos({ navigation, route }) {
     }
     setText("");
 
-    AnimRef.current.push(new Animated.Value(1));
     const newToDos = {
       ...toDos,
       [Date.now()]: {
@@ -116,24 +114,9 @@ function ToDos({ navigation, route }) {
   };
 
   const deleteToDos = (key, idx) => {
-    Animated.timing(AnimRef.current[idx], {
-      toValue: 0,
-      duration: 500,
-      useNativeDriver: false,
-    }).start(() => {
-      /**
-       * 사라지는 애니메이션이 끝난 후, 애니메이션 배열을 조작해주고 toDos를 수정해 준다.
-       */
-      deleteAnim(idx);
-      const newToDos = { ...toDos };
-      delete newToDos[key];
-      setToDos(newToDos);
-    });
-  };
-
-  const deleteAnim = (index) => {
-    const newList = AnimRef.current.filter((value, idx) => idx !== index);
-    AnimRef.current = newList;
+    const newToDos = { ...toDos };
+    delete newToDos[key];
+    setToDos(newToDos);
   };
 
   const saveToDos = () => {
@@ -197,7 +180,7 @@ function ToDos({ navigation, route }) {
       >
         {Object.keys(toDos).map((key, idx) => {
           return (
-            <AnimatedBox key={key} style={{ opacity: AnimRef.current[idx] }}>
+            <AnimatedBox key={key}>
               <View
                 style={{
                   ...styles.toDo,

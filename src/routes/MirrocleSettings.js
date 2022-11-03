@@ -1,10 +1,30 @@
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { theme } from "../../colors";
+import { IP_ADDRESS } from "../../temp/IPAddress";
 import { Logo } from "../components/Logo";
 import { MyButton } from "../components/MyButton";
 
 function MirrocleSettings({ navigation, route }) {
   const { accountIdx } = route.params;
+  const [serialNumber, setSirialNumber] = useState("");
+
+  const getConnectedSerialNumber = async () => {
+    let url = IP_ADDRESS + "/mirror/serial";
+    url += `?accountIndex=${accountIdx}`;
+
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.status === 200) {
+      setSirialNumber(json.serial_num);
+    } else {
+      setSirialNumber("연결 오류");
+    }
+  };
+
+  useEffect(() => {
+    getConnectedSerialNumber();
+  });
 
   return (
     <View style={styles.container}>
@@ -24,7 +44,7 @@ function MirrocleSettings({ navigation, route }) {
         <View style={styles.setting}>
           <Text style={styles.title}>Mirrocle S/N</Text>
           <View style={styles.setting__option}>
-            <Text>ABCDEFG</Text>
+            <Text>{serialNumber}</Text>
           </View>
         </View>
       </ScrollView>
