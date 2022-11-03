@@ -21,7 +21,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "../components/Logo";
 import { theme } from "../../colors";
-import { widgetSizeList } from "../../Widgets";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -39,34 +38,56 @@ const AnimatedBox = Animated.createAnimatedComponent(View);
 const OS = Platform.OS;
 
 const moduleSize = {
-  "아날로그 시계": {
-    x: 2,
-    y: 2,
-  },
-  "디지털 시계": {
-    x: 2,
-    y: 1,
-  },
-  날씨: {
-    x: 2,
-    y: 2,
-  },
-  지하철: {
-    x: 3,
-    y: 1,
-  },
-  ToDo: {
-    x: 1,
-    y: 3,
-  },
-  뉴스: {
-    x: 4,
-    y: 3,
-  },
-  달력: {
-    x: 3,
-    y: 4,
-  },
+  "아날로그 시계": [
+    {
+      x: 2,
+      y: 2,
+    },
+  ],
+  "디지털 시계": [
+    {
+      x: 2,
+      y: 1,
+    },
+  ],
+  날씨: [
+    {
+      x: 1,
+      y: 1,
+    },
+    {
+      x: 2,
+      y: 1,
+    },
+  ],
+  지하철: [
+    {
+      x: 3,
+      y: 1,
+    },
+  ],
+  ToDo: [
+    {
+      x: 2,
+      y: 2,
+    },
+    {
+      x: 1,
+      y: 3,
+    },
+  ],
+  뉴스: [
+    {
+      x: 4,
+      y: 3,
+    },
+  ],
+  달력: [
+    {
+      x: 3,
+      y: 4,
+    },
+  ],
 };
 
 const subwayOption = {
@@ -761,122 +782,68 @@ function MainScreen({ navigation, route }) {
                   //   ? { ...detailPanResponder.panHandlers }
                   //   : null)}
                 >
-                  {/* {widgetSizeList.width.map((width, key) =>
-                    widgetSizeList.height.map((height, key) => (
-                      <View
-                        key={key}
-                        style={{
-                          width: SCREEN_WIDTH,
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: "rgba(128, 128, 128, 0.3)",
-                            borderRadius: 10,
-                            width: 200,
-                            height: 200,
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                          onPress={() => {
-                            setWidgetListVisible(!widgetListVisible);
-                            setWidgetDetailVisible(!widgetDetailVisible);
-                            setWidgetSize(width, height);
-                            navigation.navigate("PlaceWidgets", {
-                              widget: selectedWidget,
-                              accountIdx,
-                              userIdx,
-                              username,
-                            });
-                          }}
-                        >
-                          {selectedWidget.app.theme === "Ionicons" ? (
-                            <Ionicons
-                              name={selectedWidget.app.icon}
-                              size={80}
-                              color="white"
-                            />
-                          ) : selectedWidget.app.theme === "Feather" ? (
-                            <Feather
-                              name={selectedWidget.app.icon}
-                              size={80}
-                              color="white"
-                            />
-                          ) : (
-                            <MaterialCommunityIcons
-                              name={selectedWidget.app.icon}
-                              size={80}
-                              color="white"
-                            />
-                          )}
-                        </TouchableOpacity>
-                        <Text style={{ color: "white", fontSize: 28 }}>
-                          {`${width} X ${height}`}
-                        </Text>
-                      </View>
-                    ))
-                  )} */}
-                  <View
-                    style={{
-                      width: SCREEN_WIDTH,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: "rgba(128, 128, 128, 0.3)",
-                        borderRadius: 10,
-                        width: 200,
-                        height: 200,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                      onPress={() => {
-                        setWidgetListVisible(!widgetListVisible);
-                        setWidgetDetailVisible(!widgetDetailVisible);
-                        setWidgetSize(
-                          moduleSize[selectedWidget.module_name].x,
-                          moduleSize[selectedWidget.module_name].y
+                  {selectedWidget.module_name !== "" &&
+                    moduleSize[selectedWidget.module_name].map(
+                      (widgetSize, idx) => {
+                        return (
+                          <View
+                            key={idx}
+                            style={{
+                              width: SCREEN_WIDTH,
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor: "rgba(128, 128, 128, 0.3)",
+                                borderRadius: 10,
+                                width: 90 * widgetSize.x,
+                                height: 90 * widgetSize.y,
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                              onPress={() => {
+                                setWidgetListVisible(!widgetListVisible);
+                                setWidgetDetailVisible(!widgetDetailVisible);
+                                setWidgetSize(widgetSize.x, widgetSize.y);
+                                navigation.navigate("PlaceWidgets", {
+                                  widget: selectedWidget,
+                                  accountIdx,
+                                  userIdx,
+                                  username,
+                                });
+                              }}
+                            >
+                              {selectedWidget.app.theme === "Ionicons" ? (
+                                <Ionicons
+                                  name={selectedWidget.app.icon}
+                                  size={60}
+                                  color="white"
+                                />
+                              ) : selectedWidget.app.theme === "Feather" ? (
+                                <Feather
+                                  name={selectedWidget.app.icon}
+                                  size={60}
+                                  color="white"
+                                />
+                              ) : (
+                                <MaterialCommunityIcons
+                                  name={selectedWidget.app.icon}
+                                  size={60}
+                                  color="white"
+                                />
+                              )}
+                            </TouchableOpacity>
+                            <Text style={{ color: "white", fontSize: 28 }}>
+                              {selectedWidget.module_name === ""
+                                ? null
+                                : `${widgetSize.x} X ${widgetSize.y}`}
+                            </Text>
+                          </View>
                         );
-                        navigation.navigate("PlaceWidgets", {
-                          widget: selectedWidget,
-                          accountIdx,
-                          userIdx,
-                          username,
-                        });
-                      }}
-                    >
-                      {selectedWidget.app.theme === "Ionicons" ? (
-                        <Ionicons
-                          name={selectedWidget.app.icon}
-                          size={80}
-                          color="white"
-                        />
-                      ) : selectedWidget.app.theme === "Feather" ? (
-                        <Feather
-                          name={selectedWidget.app.icon}
-                          size={80}
-                          color="white"
-                        />
-                      ) : (
-                        <MaterialCommunityIcons
-                          name={selectedWidget.app.icon}
-                          size={80}
-                          color="white"
-                        />
-                      )}
-                    </TouchableOpacity>
-                    <Text style={{ color: "white", fontSize: 28 }}>
-                      {selectedWidget.module_name === ""
-                        ? null
-                        : `${moduleSize[selectedWidget.module_name].x} X ${
-                            moduleSize[selectedWidget.module_name].y
-                          }`}
-                    </Text>
-                  </View>
+                      }
+                    )}
                 </ScrollView>
               </View>
               <View
