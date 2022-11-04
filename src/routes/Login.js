@@ -26,6 +26,19 @@ function Login({ navigation }) {
     setUserId("");
     setUserPwd("");
   };
+  const checkConnection = async (checkAccountIdx) => {
+    let url = IP_ADDRESS + "/mirror/serial";
+    url += `?accountIndex=${checkAccountIdx}`;
+
+    const res = await fetch(url);
+    const json = await res.json();
+    console.log(json);
+    if (json.status === 200) {
+      console.log("is connect");
+    } else {
+      console.log("is not connect");
+    }
+  };
   async function loginWithServer() {
     let url = `${IP_ADDRESS}/account/login`;
     // url += `?id=${userId}&pw=${userPwd}`;
@@ -60,7 +73,8 @@ function Login({ navigation }) {
        */
       const loginInfo = await loginWithServer();
       if (loginInfo.status === 200) {
-        if (loginInfo.mirrorIdx) {
+        console.log(loginInfo);
+        if (loginInfo.mirrorIdx !== null) {
           navigation.reset({
             routes: [
               {
@@ -73,19 +87,19 @@ function Login({ navigation }) {
             ],
           });
         } else {
-          // navigation.reset({
-          //   routes: [{ name: "ConnectMirrocle", params: loginInfo }],
-          // });
           navigation.reset({
-            routes: [
-              {
-                name: "UserList",
-                params: {
-                  accountIdx: loginInfo.Account_idx,
-                },
-              },
-            ],
+            routes: [{ name: "ConnectMirrocle", params: loginInfo }],
           });
+          // navigation.reset({
+          //   routes: [
+          //     {
+          //       name: "UserList",
+          //       params: {
+          //         accountIdx: loginInfo.Account_idx,
+          //       },
+          //     },
+          //   ],
+          // });
         }
         clearAll();
       } else {

@@ -85,7 +85,7 @@ const moduleSize = {
   달력: [
     {
       x: 3,
-      y: 4,
+      y: 3,
     },
   ],
 };

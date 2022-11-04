@@ -263,7 +263,25 @@ function PlaceWidgets({ navigation, route }) {
         currentY = Math.round(position.y._value);
         console.log("===========================");
         console.log("===========================");
-        console.log(`currentX: "${currentX}"`);
+        try {
+          console.log(`currentX: "${currentX}"`);
+        } catch (error) {
+          console.log(error);
+          Alert.alert(
+            "something's wrong!",
+            "죄송합니다. 다시 한번 시도해주세요!",
+            [
+              {
+                text: "OK",
+              },
+            ]
+          );
+          navigation.navigate("MainScreen", {
+            accountIdx,
+            userIdx,
+            username,
+          });
+        }
         console.log("===========================");
         console.log("===========================");
         let moveX = NaN;

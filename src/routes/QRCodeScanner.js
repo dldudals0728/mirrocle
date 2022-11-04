@@ -3,7 +3,8 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import { StyleSheet, View } from "react-native";
 import { MyButton } from "../components/MyButton";
 
-function QRCodeScanner({ navigation }) {
+function QRCodeScanner({ navigation, route }) {
+  const { accountIdx, mirrorIdx } = route.params;
   const [hasPermission, setHasPermission] = useState(false);
   useEffect(() => {
     const getPermission = async () => {
@@ -26,6 +27,8 @@ function QRCodeScanner({ navigation }) {
         {
           name: "ConnectMirrocle",
           params: {
+            Account_idx: accountIdx,
+            mirrorIdx,
             SN: data,
           },
         },
